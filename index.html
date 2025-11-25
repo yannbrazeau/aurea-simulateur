@@ -2,986 +2,1064 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Aurea – Simulateur iPhone</title>
+  <title>Aurea Saint-Maurice – Simulateur Immo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --bg-main: #f6f0e6;
-      --bg-card: #ffffff;
-      --text-main: #2f3027;
-      --text-muted: #7c826d;
-      --green: #4f6b4a;
-      --gold: #d6a03a;
-      --red: #c7524b;
-      --border-soft: #d2c9b6;
-      --bad: #ffe2de;
-      --medium: #fff3cf;
-      --good: #e3f3df;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
-      color: var(--text-main);
-      background: var(--bg-main);
+      --aurea-bg: #fff8e8;
+      --aurea-green: #6b754c;
+      --aurea-gold: #e2b950;
+      --aurea-text: #374151;
+      --aurea-muted: #9ca3af;
+      --card-bg: #ffffff;
+      --border-soft: #e5e7eb;
+      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.08);
+      --radius-xl: 18px;
+      --radius-large: 24px;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 24px 12px 40px;
-      max-width: 480px;
-      margin-inline: auto;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fffdf4 0, var(--aurea-bg) 45%, #f3e9d0 100%);
+      color: var(--aurea-text);
     }
-    .card {
-      background: var(--bg-card);
-      border-radius: 24px;
-      padding: 20px 18px 22px;
-      margin-bottom: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-      border: 1px solid var(--border-soft);
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
     }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-radius: var(--radius-large);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+
     .logo-block {
-      text-align: center;
-      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
+
     .logo-block img {
-      max-width: 220px;
-      width: 75%;
-      height: auto;
-      display: block;
-      margin: 0 auto 6px;
+      height: 56px;
+      width: auto;
     }
-    h1 {
-      font-size: 18px;
+
+    .logo-text-main {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--aurea-green);
+    }
+
+    .logo-text-sub {
+      font-size: 13px;
+      text-transform: uppercase;
       letter-spacing: 0.18em;
-      text-transform: uppercase;
-      margin: 4px 0 2px;
+      color: var(--aurea-muted);
     }
-    h1 span {
-      font-weight: 500;
+
+    .header-right {
+      text-align: right;
+      font-size: 13px;
+      color: var(--aurea-muted);
     }
-    .subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-    h2 {
-      font-size: 15px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin: 0 0 8px;
-      color: var(--green);
-    }
-    .pill {
+
+    .badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 999px;
-      background: #f2ead7;
-      color: var(--text-muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 8px;
-    }
-    .pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--gold);
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.25fr 1fr;
-      gap: 10px;
-    }
-    .field {
-      margin-bottom: 10px;
-    }
-    .field label {
-      display: block;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 1px;
-    }
-    .field small {
-      display: block;
-      font-size: 10px;
-      color: #aaa790;
-    }
-    input[type="number"] {
-      width: 100%;
-      padding: 7px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: #fbf7ee;
-      font-size: 14px;
-      text-align: right;
-      -moz-appearance: textfield;
-    }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .inline-suffix {
-      position: relative;
-    }
-    .inline-suffix span {
-      position: absolute;
-      right: 13px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 11px;
-      color: #b2aa97;
-      pointer-events: none;
-    }
-    .inline-suffix input {
-      padding-right: 30px;
-    }
-    .section-label {
+      background: rgba(107, 117, 76, 0.1);
+      color: var(--aurea-green);
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.16em;
-      color: var(--text-muted);
-      margin: 2px 0 6px;
+      margin-bottom: 6px;
     }
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 8px;
-      margin-bottom: 8px;
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .result-card {
-      border-radius: 18px;
-      padding: 10px 10px 9px;
-      border: 1px solid var(--border-soft);
-      background: #fbf7ee;
-      min-height: 54px;
+
+    @media (min-width: 900px) {
+      .layout {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      .col-left {
+        width: 45%;
+      }
+      .col-right {
+        width: 55%;
+      }
     }
-    .result-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--text-muted);
-      margin-bottom: 3px;
+
+    .col-left,
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
-    .result-value {
-      font-size: 16px;
-      font-weight: 600;
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      padding: 16px 16px 14px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(0, 0, 0, 0.02);
     }
-    .result-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-    .ok-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: #f7ead2;
-      font-size: 11px;
-      gap: 4px;
-      margin-left: 4px;
-    }
-    .ok-chip::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-    }
-    .result-card[data-score="good"] { background: var(--good); }
-    .result-card[data-score="medium"] { background: var(--medium); }
-    .result-card[data-score="bad"] { background: var(--bad); }
-    .result-card[data-score="good"] .ok-chip::before { background: var(--green); }
-    .result-card[data-score="medium"] .ok-chip::before { background: var(--gold); }
-    .result-card[data-score="bad"] .ok-chip::before { background: var(--red); }
-    .result-card[data-score="medium"] .ok-chip { background: #ffecc0; }
-    .result-card[data-score="bad"] .ok-chip { background: #ffd3cb; }
-    .result-card[data-score="bad"] .ok-chip span.label { color: var(--red); }
-    .result-card[data-score="medium"] .ok-chip span.label { color: #a87a1c; }
-    .result-card[data-score="good"] .ok-chip span.label { color: var(--green); }
-    .kpi-row {
+
+    .card-header {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
+      align-items: center;
+      margin-bottom: 10px;
     }
-    canvas {
-      width: 100%;
-      max-height: 260px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 6px;
-      font-size: 11px;
-    }
-    th, td {
-      padding: 4px 3px;
-      border-bottom: 1px solid #efe3cf;
-      text-align: right;
-    }
-    th {
-      text-align: right;
-      font-size: 10px;
-      letter-spacing: 0.08em;
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--aurea-green);
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: var(--text-muted);
     }
-    th:first-child, td:first-child { text-align: left; }
-    tr.negative td { color: var(--red); }
-    tr.positive td { color: var(--green); }
-    .footer-note {
-      font-size: 10px;
-      color: #a29c88;
-      text-align: center;
-      margin-top: 12px;
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--aurea-muted);
     }
-    .btn {
+
+    .pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(226, 185, 80, 0.1);
+      color: var(--aurea-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 8px 12px;
+    }
+
+    @media (min-width: 700px) {
+      .inputs-grid.cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 12px;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .field small {
+      font-size: 11px;
+      color: var(--aurea-muted);
+    }
+
+    .field input {
+      flex: 1;
+      padding: 7px 9px;
       border-radius: 999px;
       border: 1px solid var(--border-soft);
-      background: #fbf7ee;
+      font-size: 13px;
+      outline: none;
+      background: #faf7ee;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s;
+    }
+
+    .field input:focus {
+      border-color: var(--aurea-green);
+      box-shadow: 0 0 0 1px rgba(107, 117, 76, 0.18);
+      background: #fffdf7;
+    }
+
+    .field span.unit {
+      font-size: 11px;
+      color: var(--aurea-muted);
+      padding: 0 4px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (min-width: 600px) {
+      .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-card {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fdf7e7, #faf3dc);
+      border: 1px solid rgba(226, 185, 80, 0.25);
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--aurea-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 3px;
+    }
+
+    .kpi-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--aurea-green);
+      margin-top: 2px;
+    }
+
+    .scenario-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .scenario-bar input {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 12px;
+      min-width: 140px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
       padding: 7px 12px;
       font-size: 12px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--aurea-green);
+      color: white;
+      transition: background 0.15s ease, transform 0.05s ease,
+        box-shadow 0.15s ease;
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
     }
-    .btn-primary {
-      background: var(--green);
+
+    button.secondary {
+      background: #f5eee0;
+      color: var(--aurea-green);
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: #f97373;
       color: #fff;
-      border-color: var(--green);
+      box-shadow: none;
     }
-    .save-load-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    select {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border: 1px solid var(--border-soft);
+      background: #faf7ee;
+      min-width: 150px;
+    }
+
+    .table-wrapper {
+      margin-top: 8px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      overflow: hidden;
+      background: #fffcf5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    thead {
+      background: rgba(107, 117, 76, 0.08);
+    }
+
+    th,
+    td {
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid #efe5d3;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    th {
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--aurea-muted);
+      margin-top: 4px;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="logo-block">
-    <!-- Ton logo : fichier logo-aurea.png dans le repo -->
-    <img src="logo-aurea.png" alt="Aurea Saint-Maurice" />
-    <h1><span>Aurea – Saint-Maurice</span></h1>
-    <div class="subtitle">Simulateur de projet locatif</div>
-  </div>
+  <div class="page">
+    <header>
+      <div class="logo-block">
+        <img src="logo-aurea.png" alt="Aurea Saint-Maurice" />
+        <div>
+          <div class="logo-text-main">Aurea</div>
+          <div class="logo-text-sub">Saint-Maurice · Simulation patrimoniale</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="badge">
+          <span>Simulateur interactif</span>
+        </div>
+        <div>Jouez avec les hypothèses en temps réel<br />et sauvegardez vos scénarios.</div>
+      </div>
+    </header>
 
-  <!-- 1. Acquisition & financement -->
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Acquisition
-    </div>
-    <h2>1. Acquisition & financement</h2>
+    <div class="layout">
+      <!-- COLONNE GAUCHE : HYPOTHÈSES -->
+      <div class="col-left">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Bloc acquisition</div>
+              <div class="card-subtitle">Montant du projet & financement</div>
+            </div>
+            <span class="pill">Entrées</span>
+          </div>
+          <div class="inputs-grid cols-2">
+            <div class="field">
+              <label>Prix d'achat</label>
+              <div class="field-row">
+                <input type="number" data-field="prixAchat" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Frais de notaire</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="fraisNotairePct" />
+                <span class="unit">% du prix</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Travaux initiaux</label>
+              <div class="field-row">
+                <input type="number" data-field="travauxInitiaux" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Apport</label>
+              <div class="field-row">
+                <input type="number" data-field="apport" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Durée du prêt principal</label>
+              <div class="field-row">
+                <input type="number" data-field="dureePret" />
+                <span class="unit">ans</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux du prêt principal</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxPret" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux assurance emprunteur</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxAssurance" />
+                <span class="unit">% / an</span>
+              </div>
+              <small>Appliqué au capital restant dû.</small>
+            </div>
+          </div>
+        </div>
 
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Prix d'achat (net vendeur)</label>
-        <input id="prixAchat" type="number" value="300000" />
-        <span>€</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Frais de notaire & divers</label>
-        <input id="fraisNotaire" type="number" value="24000" />
-        <span>€</span>
-      </div>
-    </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Loyers & services</div>
+              <div class="card-subtitle">Hypothèses d’exploitation</div>
+            </div>
+          </div>
+          <div class="inputs-grid cols-2">
+            <div class="field">
+              <label>Loyers annuels bruts (année 1)</label>
+              <div class="field-row">
+                <input type="number" data-field="loyersAnnuel" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Croissance loyers</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceLoyers" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Vacance locative</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="vacance" />
+                <span class="unit">% des loyers</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Frais de gestion</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="fraisGestionPct" />
+                <span class="unit">% loyers encaissés</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Charges non récupérables (année 1)</label>
+              <div class="field-row">
+                <input type="number" data-field="chargesNRAn1" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Croissance charges</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceCharges" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Année début services</label>
+              <div class="field-row">
+                <input type="number" data-field="anneeDebutServices" />
+                <span class="unit">année</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Revenus services (année de départ)</label>
+              <div class="field-row">
+                <input type="number" data-field="revenusServicesAnDepart" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Croissance revenus services</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceServices" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Capex annuel (provision)</label>
+              <div class="field-row">
+                <input type="number" data-field="capexAnnuel" />
+                <span class="unit">€</span>
+              </div>
+              <small>Provision pour gros travaux.</small>
+            </div>
+            <div class="field">
+              <label>Croissance capex</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceCapex" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Revalorisation du bien</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="revaloBienPct" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Budget travaux (enveloppe prêt travaux)</label>
-        <input id="travauxTotal" type="number" value="60000" />
-        <span>€</span>
-        <small>sera séquencé plus bas</small>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Fiscalité IS</div>
+              <div class="card-subtitle">Calcul du cash-flow après impôt</div>
+            </div>
+          </div>
+          <div class="inputs-grid cols-2">
+            <div class="field">
+              <label>Taux IS réduit</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxISRedit" />
+                <span class="unit">% </span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Seuil IS réduit</label>
+              <div class="field-row">
+                <input type="number" data-field="seuilISRedit" />
+                <span class="unit">€ de bénéfice</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux IS normal</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxIS" />
+                <span class="unit">% </span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Durée de projection</label>
+              <div class="field-row">
+                <input type="number" data-field="dureeProjection" />
+                <span class="unit">années</span>
+              </div>
+            </div>
+          </div>
+          <p class="hint">
+            Hypothèse simple : l’IS est calculé sur le cash-flow avant impôt positif (pas de fiscalité sur la revente dans cette V1).
+          </p>
+        </div>
       </div>
-      <div class="field inline-suffix">
-        <label>Apport personnel</label>
-        <input id="apport" type="number" value="60000" />
-        <span>€</span>
-      </div>
-    </div>
 
-    <div class="section-label">Prêt acquisition</div>
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Taux prêt acquisition</label>
-        <input id="tauxPret" type="number" value="3.5" />
-        <span>%</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Taux assurance emprunteur</label>
-        <input id="tauxAssurance" type="number" value="0.3" />
-        <span>%</span>
-        <small>sur le capital emprunté / an</small>
-      </div>
-    </div>
+      <!-- COLONNE DROITE : SYNTHÈSE + TABLEAU + SCÉNARIOS -->
+      <div class="col-right">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Synthèse</div>
+              <div class="card-subtitle">Vue rapide de la performance</div>
+            </div>
+          </div>
+          <div class="summary-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Cash-flow année 1</div>
+              <div class="kpi-value" id="kpi-cf1">–</div>
+              <div class="kpi-sub" id="kpi-cf1-sub">avant IS</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Cash-flow moyen</div>
+              <div class="kpi-value" id="kpi-cf-moy">–</div>
+              <div class="kpi-sub" id="kpi-cf-moy-sub">sur la période</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Patrimoine net final</div>
+              <div class="kpi-value" id="kpi-patrimoine">–</div>
+              <div class="kpi-sub" id="kpi-patrimoine-sub">valeur – dettes</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">TRI projet</div>
+              <div class="kpi-value" id="kpi-tri-avant">–</div>
+              <div class="kpi-sub" id="kpi-tri-apres">après IS : –</div>
+            </div>
+          </div>
 
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Durée prêt acquisition</label>
-        <input id="dureePret" type="number" value="20" />
-        <span>ans</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Horizon d'analyse</label>
-        <input id="nbAnnees" type="number" value="20" />
-        <span>ans</span>
-      </div>
-    </div>
-  </div>
+          <hr style="border: none; border-top: 1px dashed #e5decf; margin: 10px 0;" />
 
-  <!-- 2. Loyers & exploitation -->
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Loyers & exploitation
-    </div>
-    <h2>2. Loyers, charges & CAPEX</h2>
+          <div class="card-subtitle" style="margin-bottom: 4px;">Scénarios</div>
+          <div class="scenario-bar">
+            <input id="scenario-name" placeholder="Nom du scénario (ex : Base, Optimiste…)" />
+            <button id="btn-save">💾 Sauvegarder</button>
+            <select id="scenario-select"></select>
+            <button class="secondary" id="btn-load">⬇ Charger</button>
+            <button class="danger" id="btn-delete">🗑 Supprimer</button>
+          </div>
+          <p class="hint">
+            Les scénarios sont sauvegardés localement dans votre navigateur (localStorage).  
+            Vous pouvez en créer plusieurs, les recharger et les modifier.
+          </p>
+        </div>
 
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Loyer mensuel brut (année 1)</label>
-        <input id="loyerMensuel" type="number" value="1800" />
-        <span>€</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Croissance loyers (% / an)</label>
-        <input id="croissanceLoyers" type="number" value="2" />
-        <span>%</span>
-      </div>
-    </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Projection annuelle</div>
+              <div class="card-subtitle">Cash-flow, IS et patrimoine année par année</div>
+            </div>
+          </div>
 
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Vacance locative</label>
-        <input id="vacanceLocative" type="number" value="5" />
-        <span>%</span>
-        <small>du loyer brut</small>
-      </div>
-      <div class="field inline-suffix">
-        <label>Frais de gestion</label>
-        <input id="gestionPct" type="number" value="7" />
-        <span>%</span>
-        <small>des loyers encaissés</small>
-      </div>
-    </div>
-
-    <div class="section-label">Charges non récupérables (année 1)</div>
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Taxe foncière</label>
-        <input id="taxeFonciere" type="number" value="2500" />
-        <span>€</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Assurances (PNO, MRH...)</label>
-        <input id="assuranceBien" type="number" value="600" />
-        <span>€</span>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Année</th>
+                  <th>Loyers encaissés</th>
+                  <th>Charges + capex</th>
+                  <th>Annuités</th>
+                  <th>CF avant IS</th>
+                  <th>Impôt IS</th>
+                  <th>CF après IS</th>
+                  <th>Capital restant dû</th>
+                  <th>Valeur du bien</th>
+                  <th>Patrimoine net</th>
+                </tr>
+              </thead>
+              <tbody id="projection-body">
+                <!-- Rempli en JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Comptabilité / expert</label>
-        <input id="compta" type="number" value="800" />
-        <span>€</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Autres charges non récup.</label>
-        <input id="autresCharges" type="number" value="500" />
-        <span>€</span>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Croissance charges non récup.</label>
-        <input id="hausseCharges" type="number" value="2" />
-        <span>%</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Revalorisation du bien</label>
-        <input id="croissanceBien" type="number" value="2" />
-        <span>%</span>
-        <small>par an (TRI)</small>
-      </div>
-    </div>
-
-    <div class="section-label">Séquencement des travaux (prêt travaux)</div>
-    <div class="field">
-      <small>Répartis l'enveloppe de travaux par année. Un mini-prêt est créé pour chaque poste, à partir de l'année de consommation.</small>
-    </div>
-
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Taux prêt travaux</label>
-        <input id="tauxTravaux" type="number" value="3.5" />
-        <span>%</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Durée prêts travaux</label>
-        <input id="dureeTravaux" type="number" value="15" />
-        <span>ans</span>
-      </div>
-    </div>
-
-    <div id="travauxContainer"></div>
-    <div class="field">
-      <button type="button" id="addTravauxRow" class="btn">+ Ajouter un poste travaux</button>
-      <small id="travauxTotalInfo"></small>
-    </div>
-  </div>
-
-  <!-- 3. Résultats -->
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Synthèse
-    </div>
-    <h2>3. Résultats & cash-flow</h2>
-
-    <div class="field inline-suffix" style="max-width:160px;margin-bottom:12px;">
-      <label>Année affichée en résumé</label>
-      <input id="anneeResume" type="number" value="1" />
-      <span>n°</span>
-      <small>Ex : 1, 5, 10…</small>
-    </div>
-
-    <div class="results-grid">
-      <div class="result-card" id="cardRendementBrut">
-        <div class="result-title">Rendement brut</div>
-        <div class="result-value" id="rendementBrut">–</div>
-        <div class="result-sub">loyer brut / coût total projet</div>
-      </div>
-      <div class="result-card" id="cardRendementNet">
-        <div class="result-title">Rendement net</div>
-        <div class="result-value" id="rendementNet">–</div>
-        <div class="result-sub">après charges & frais de gestion</div>
-      </div>
-      <div class="result-card" id="cardCashflow">
-        <div class="result-title">Cash-flow annuel <span class="ok-chip"><span class="label">OK</span></span></div>
-        <div class="result-value" id="cashflowAnnuel">–</div>
-        <div class="result-sub">année affichée</div>
-      </div>
-      <div class="result-card" id="cardDSCR">
-        <div class="result-title">DSCR <span class="ok-chip"><span class="label">OK</span></span></div>
-        <div class="result-value" id="dscr">–</div>
-        <div class="result-sub">résultat / annuités</div>
-      </div>
-    </div>
-
-    <div class="result-card" id="cardTRI" style="margin-top:6px;">
-      <div class="result-title">TRI projet (IRR)</div>
-      <div class="result-value" id="triGlobal">–</div>
-      <div class="result-sub">sur la base de l'apport & la revente</div>
-    </div>
-
-    <div class="kpi-row">
-      <span>Coût total projet (achat + frais + travaux)</span>
-      <span id="coutTotal">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Montant prêt acquisition</span>
-      <span id="mtPretAcq">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Montant total travaux séquencés</span>
-      <span id="mtTravauxSeq">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Résultat d'exploitation (année résumé)</span>
-      <span id="resExploit">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Annuité prêt acquisition (capital + assurance)</span>
-      <span id="annuiteAcq">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Annuités prêts travaux (année résumé)</span>
-      <span id="annuiteTravaux">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Annuité totale</span>
-      <span id="annuiteTotale">–</span>
-    </div>
-  </div>
-
-  <!-- 4. Cash-flow année par année -->
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Cash-flow dans le temps
-    </div>
-    <h2>4. Cash-flow année par année</h2>
-    <div class="section-label">Ligne verte : cash-flow. Ligne dorée : résultat d'exploitation.</div>
-    <div style="height:240px;">
-      <canvas id="cashflowChart"></canvas>
-    </div>
-
-    <table id="tableDetails">
-      <thead>
-        <tr>
-          <th>Année</th>
-          <th>Résultat expl.</th>
-          <th>Annuités</th>
-          <th>Cash-flow</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- 5. Sauvegarde -->
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Sauvegarde
-    </div>
-    <h2>5. Sauvegarder / charger un scénario</h2>
-    <p style="font-size:12px;color:var(--text-muted);margin-top:0;">
-      Quand tu as un jeu d'hypothèses qui te convient, tu peux le sauvegarder dans un fichier
-      <code>.json</code> et le recharger plus tard (même sur un autre appareil).
-    </p>
-    <div class="save-load-row">
-      <button type="button" class="btn btn-primary" id="btnSave">Sauvegarder ce scénario</button>
-      <button type="button" class="btn" id="btnLoad">Charger un scénario</button>
-      <input type="file" id="fileLoad" accept="application/json" style="display:none;" />
-    </div>
-    <small style="font-size:11px;color:var(--text-muted);display:block;margin-top:6px;">
-      Astuce : tu peux te faire une bibliothèque de scénarios (Aurea 1, Aurea 2, etc.) et les charger à la volée.
-    </small>
-  </div>
-
-  <div class="footer-note">
-    Outil indicatif de travail. À utiliser comme support de discussion avec ta banque / ton conseil,
-    pas comme validation fiscale ou comptable définitive.
   </div>
 
   <script>
-    // --- utilitaires ---
-    function euro(n) {
-      if (!isFinite(n)) return "–";
-      return n.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " €";
-    }
-    function pourcent(n) {
-      if (!isFinite(n)) return "–";
-      return n.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " %";
-    }
-    function annuite(montant, taux, duree) {
-      if (montant <= 0 || duree <= 0) return 0;
-      const r = taux / 100;
-      if (r === 0) return montant / duree;
-      return montant * r / (1 - Math.pow(1 + r, -duree));
-    }
-    // TRI (IRR) annuel
-    function irr(cashflows, guess = 0.05) {
-      let rate = guess;
-      for (let iter = 0; iter < 50; iter++) {
-        let npv = 0;
-        let dnpv = 0;
-        for (let t = 0; t < cashflows.length; t++) {
-          const cf = cashflows[t];
-          const denom = Math.pow(1 + rate, t);
-          npv += cf / denom;
-          dnpv -= t * cf / (denom * (1 + rate));
-        }
-        if (Math.abs(npv) < 1e-6) return rate;
-        const newRate = rate - npv / dnpv;
-        if (!isFinite(newRate)) break;
-        rate = newRate;
-      }
-      return NaN;
-    }
-
-    const travauxContainer = document.getElementById("travauxContainer");
-    const addTravauxBtn = document.getElementById("addTravauxRow");
-    const nbAnneesInput = document.getElementById("nbAnnees");
-    const travauxTotalInput = document.getElementById("travauxTotal");
-    const travauxTotalInfo = document.getElementById("travauxTotalInfo");
-
-    function createTravauxRow(montant = 10000, annee = 1) {
-      const wrap = document.createElement("div");
-      wrap.className = "travaux-row grid-2";
-
-      const f1 = document.createElement("div");
-      f1.className = "field inline-suffix";
-      const l1 = document.createElement("label");
-      l1.textContent = "Montant poste";
-      const i1 = document.createElement("input");
-      i1.type = "number";
-      i1.value = montant;
-      const s1 = document.createElement("span");
-      s1.textContent = "€";
-      f1.appendChild(l1); f1.appendChild(i1); f1.appendChild(s1);
-
-      const f2 = document.createElement("div");
-      f2.className = "field inline-suffix";
-      const l2 = document.createElement("label");
-      l2.textContent = "Année de conso.";
-      const i2 = document.createElement("input");
-      i2.type = "number";
-      i2.value = annee;
-      const s2 = document.createElement("span");
-      s2.textContent = "n°";
-      f2.appendChild(l2); f2.appendChild(i2); f2.appendChild(s2);
-
-      wrap.appendChild(f1);
-      wrap.appendChild(f2);
-
-      [i1, i2].forEach(inp => inp.addEventListener("input", recalc));
-      travauxContainer.appendChild(wrap);
-    }
-
-    addTravauxBtn.addEventListener("click", () => {
-      const annee = Math.min(parseInt(nbAnneesInput.value || "20", 10), 40);
-      createTravauxRow(10000, annee);
-      recalc();
-    });
-
-    // valeurs de départ : 3 postes étalés
-    createTravauxRow(20000, 1);
-    createTravauxRow(20000, 3);
-    createTravauxRow(20000, 5);
-
-    const inputIds = [
-      "prixAchat","fraisNotaire","travauxTotal","apport",
-      "tauxPret","tauxAssurance","dureePret","nbAnnees",
-      "loyerMensuel","croissanceLoyers","vacanceLocative","gestionPct",
-      "taxeFonciere","assuranceBien","compta","autresCharges","hausseCharges",
-      "croissanceBien","tauxTravaux","dureeTravaux","anneeResume"
-    ];
-    const inputs = inputIds.map(id => document.getElementById(id));
-    inputs.forEach(inp => inp.addEventListener("input", recalc));
-
-    const el = {
-      rendementBrut: document.getElementById("rendementBrut"),
-      rendementNet: document.getElementById("rendementNet"),
-      cashflowAnnuel: document.getElementById("cashflowAnnuel"),
-      dscr: document.getElementById("dscr"),
-      triGlobal: document.getElementById("triGlobal"),
-      coutTotal: document.getElementById("coutTotal"),
-      mtPretAcq: document.getElementById("mtPretAcq"),
-      mtTravauxSeq: document.getElementById("mtTravauxSeq"),
-      resExploit: document.getElementById("resExploit"),
-      annuiteAcq: document.getElementById("annuiteAcq"),
-      annuiteTravaux: document.getElementById("annuiteTravaux"),
-      annuiteTotale: document.getElementById("annuiteTotale"),
+    // -----------------------------
+    // Données initiales (issues de ton Excel)
+    // -----------------------------
+    const defaultHypotheses = {
+      prixAchat: 765000,
+      fraisNotairePct: 0.0668,
+      travauxInitiaux: 50000,
+      apport: 235000,
+      dureePret: 20,
+      tauxPret: 0.0309,
+      tauxAssurance: 0.0045,
+      loyersAnnuel: 50280,
+      croissanceLoyers: 0.02,
+      vacance: 0.02,
+      fraisGestionPct: 0.01,
+      chargesNRAn1: 6802,
+      croissanceCharges: 0.025,
+      revaloBienPct: 0.02,
+      anneeDebutServices: 2,
+      revenusServicesAnDepart: 1500,
+      croissanceServices: 0.03,
+      capexAnnuel: 3000,
+      croissanceCapex: 0.0,
+      tauxISRedit: 0.15,
+      seuilISRedit: 42500,
+      tauxIS: 0.25,
+      dureeProjection: 20,
+      montantPretTravaux: 50000,
+      dureePretTravaux: 20,
+      tauxPretTravaux: 0.0309
     };
 
-    const cards = {
-      rendementBrut: document.getElementById("cardRendementBrut"),
-      rendementNet: document.getElementById("cardRendementNet"),
-      cashflow: document.getElementById("cardCashflow"),
-      dscr: document.getElementById("cardDSCR"),
-      tri: document.getElementById("cardTRI"),
-    };
+    let hypotheses = { ...defaultHypotheses };
 
-    let chart;
+    // -----------------------------
+    // Utilitaires math
+    // -----------------------------
+    function annuite(capital, taux, duree) {
+      if (taux === 0) return capital / duree;
+      const r = taux;
+      return (capital * r) / (1 - Math.pow(1 + r, -duree));
+    }
 
-    function recalc() {
-      const prix = parseFloat(document.getElementById("prixAchat").value) || 0;
-      const frais = parseFloat(document.getElementById("fraisNotaire").value) || 0;
-      const travauxEnvelope = parseFloat(travauxTotalInput.value) || 0;
-      const apport = parseFloat(document.getElementById("apport").value) || 0;
-      const nbAnnees = Math.max(1, parseInt(nbAnneesInput.value || "20", 10));
+    function formatEuro(x) {
+      if (!isFinite(x)) return "–";
+      return (
+        (x < 0 ? "-" : "") +
+        Math.abs(x).toLocaleString("fr-FR", {
+          maximumFractionDigits: 0
+        }) +
+        " €"
+      );
+    }
 
-      const tauxPret = parseFloat(document.getElementById("tauxPret").value) || 0;
-      const tauxAss = parseFloat(document.getElementById("tauxAssurance").value) || 0;
-      const dureePret = Math.max(1, parseInt(document.getElementById("dureePret").value || "20", 10));
+    function formatEuroSmall(x) {
+      if (!isFinite(x)) return "–";
+      return (
+        (x < 0 ? "-" : "") +
+        Math.abs(x).toLocaleString("fr-FR", {
+          maximumFractionDigits: 0
+        })
+      );
+    }
 
-      const loyerMensuel = parseFloat(document.getElementById("loyerMensuel").value) || 0;
-      const croissanceLoyers = parseFloat(document.getElementById("croissanceLoyers").value) || 0;
-      const vacanceLocative = parseFloat(document.getElementById("vacanceLocative").value) || 0;
-      const gestionPct = parseFloat(document.getElementById("gestionPct").value) || 0;
+    function formatPercent(x) {
+      if (!isFinite(x)) return "–";
+      return (x * 100).toFixed(1).replace(".", ",") + " %";
+    }
 
-      const taxeFonciere = parseFloat(document.getElementById("taxeFonciere").value) || 0;
-      const assuranceBien = parseFloat(document.getElementById("assuranceBien").value) || 0;
-      const compta = parseFloat(document.getElementById("compta").value) || 0;
-      const autresCharges = parseFloat(document.getElementById("autresCharges").value) || 0;
-      const hausseCharges = parseFloat(document.getElementById("hausseCharges").value) || 0;
-      const croissanceBien = parseFloat(document.getElementById("croissanceBien").value) || 0;
+    // IRR par dichotomie
+    function irr(cashflows) {
+      // cashflows[0] = CF année 0
+      let low = -0.9;
+      let high = 1.5;
+      const f = (rate) =>
+        cashflows.reduce(
+          (acc, cf, t) => acc + cf / Math.pow(1 + rate, t),
+          0
+        );
 
-      const tauxTravaux = parseFloat(document.getElementById("tauxTravaux").value) || 0;
-      const dureeTravaux = Math.max(1, parseInt(document.getElementById("dureeTravaux").value || "15", 10));
-
-      let anneeResume = Math.max(1, parseInt(document.getElementById("anneeResume").value || "1", 10));
-      if (anneeResume > nbAnnees) anneeResume = nbAnnees;
-      document.getElementById("anneeResume").value = anneeResume;
-
-      // coût total projet (achat + frais + enveloppe travaux)
-      const coutTotalProjet = prix + frais + travauxEnvelope;
-      el.coutTotal.textContent = euro(coutTotalProjet);
-
-      // prêt acquisition
-      const mtPretAcq = Math.max(0, prix + frais - apport);
-      el.mtPretAcq.textContent = euro(mtPretAcq);
-
-      // travaux séquencés
-      const rows = Array.from(travauxContainer.querySelectorAll(".travaux-row"));
-      const seq = [];
-      let sommeTravaux = 0;
-      rows.forEach(row => {
-        const inputsRow = row.querySelectorAll("input");
-        const mt = parseFloat(inputsRow[0].value) || 0;
-        let an = parseInt(inputsRow[1].value || "1", 10);
-        if (an < 1) an = 1;
-        if (an > nbAnnees) an = nbAnnees;
-        inputsRow[1].value = an;
-        if (mt > 0) {
-          seq.push({ montant: mt, annee: an });
-          sommeTravaux += mt;
-        }
-      });
-      el.mtTravauxSeq.textContent = euro(sommeTravaux);
-      travauxTotalInfo.textContent = "Total séquencé : " + euro(sommeTravaux) + " / enveloppe " + euro(travauxEnvelope);
-      travauxTotalInfo.style.color = (sommeTravaux > travauxEnvelope) ? "var(--red)" : "var(--text-muted)";
-
-      // annuité prêt acquisition
-      const annAcqCapital = annuite(mtPretAcq, tauxPret, dureePret);
-      const annAss = mtPretAcq * (tauxAss / 100);
-      const annAcqTotale = annAcqCapital + annAss;
-      el.annuiteAcq.textContent = euro(annAcqTotale);
-
-      // base charges non récupérables année 1
-      const chargesNRbase = taxeFonciere + assuranceBien + compta + autresCharges;
-
-      // tableau annuel
-      const data = [];
-      let loyerAnnBrut = loyerMensuel * 12;
-      let chargesNR = chargesNRbase;
-
-      for (let an = 1; an <= nbAnnees; an++) {
-        const vacance = loyerAnnBrut * vacanceLocative / 100;
-        const loyersEncaisse = loyerAnnBrut - vacance;
-        const fraisGestion = loyersEncaisse * gestionPct / 100;
-
-        const resultatExploit = loyersEncaisse - fraisGestion - chargesNR;
-
-        let annTrav = 0;
-        seq.forEach(tr => {
-          if (an >= tr.annee && an < tr.annee + dureeTravaux) {
-            annTrav += annuite(tr.montant, tauxTravaux, dureeTravaux);
-          }
-        });
-
-        const annAcqAn = (an <= dureePret) ? annAcqTotale : 0;
-        const annTotales = annAcqAn + annTrav;
-        const cashflow = resultatExploit - annTotales;
-
-        data.push({
-          annee: an,
-          loyerAnnBrut,
-          loyersEncaisse,
-          resultat: resultatExploit,
-          annuites: annTotales,
-          cashflow
-        });
-
-        // indexations
-        loyerAnnBrut *= 1 + croissanceLoyers / 100;
-        chargesNR *= 1 + hausseCharges / 100;
+      let fLow = f(low);
+      let fHigh = f(high);
+      if (fLow * fHigh > 0) {
+        return NaN; // pas de changement de signe
       }
 
-      const ligneRes = data[anneeResume - 1] || data[data.length - 1];
-
-      const rendementBrut = ligneRes ? (ligneRes.loyerAnnBrut / coutTotalProjet * 100) : NaN;
-      const rendementNet = ligneRes ? (ligneRes.resultat / coutTotalProjet * 100) : NaN;
-      el.rendementBrut.textContent = pourcent(rendementBrut);
-      el.rendementNet.textContent = pourcent(rendementNet);
-
-      el.resExploit.textContent = euro(ligneRes ? ligneRes.resultat : NaN);
-      el.annuiteTravaux.textContent = euro(ligneRes ? (ligneRes.annuites - (anneeResume <= dureePret ? annAcqTotale : 0)) : NaN);
-      el.annuiteTotale.textContent = euro(ligneRes ? ligneRes.annuites : NaN);
-      el.cashflowAnnuel.textContent = euro(ligneRes ? ligneRes.cashflow : NaN);
-
-      const dscr = ligneRes && ligneRes.annuites > 0 ? ligneRes.resultat / ligneRes.annuites : NaN;
-      el.dscr.textContent = isFinite(dscr) ? dscr.toLocaleString("fr-FR", { maximumFractionDigits: 2 }) : "–";
-
-      // couleurs vert / jaune / rouge
-      function setScore(card, value, goodThresh, mediumThresh, reverse = false) {
-        let score = "medium";
-        if (!isFinite(value)) {
-          card.dataset.score = "medium";
-          return;
-        }
-        if (!reverse) {
-          if (value >= goodThresh) score = "good";
-          else if (value >= mediumThresh) score = "medium";
-          else score = "bad";
+      for (let i = 0; i < 80; i++) {
+        const mid = (low + high) / 2;
+        const fMid = f(mid);
+        if (Math.abs(fMid) < 1e-6) return mid;
+        if (fLow * fMid < 0) {
+          high = mid;
+          fHigh = fMid;
         } else {
-          if (value <= goodThresh) score = "good";
-          else if (value <= mediumThresh) score = "medium";
-          else score = "bad";
+          low = mid;
+          fLow = fMid;
         }
-        card.dataset.score = score;
       }
-      setScore(cards.rendementBrut, rendementBrut, 7, 4);
-      setScore(cards.rendementNet, rendementNet, 5, 3.5);
-      setScore(cards.cashflow, ligneRes ? ligneRes.cashflow : NaN, 0, -200);
-      setScore(cards.dscr, dscr, 1.3, 1.1);
+      return (low + high) / 2;
+    }
 
-      // TRI : CF0 = -apport, CFt = cashflow, dernière année + valeur de revente
-      const cashflows = [];
-      cashflows.push(-apport);
-      const valeurInitiale = coutTotalProjet;
-      const valeurFinale = valeurInitiale * Math.pow(1 + croissanceBien/100, nbAnnees);
-      data.forEach((row, idx) => {
-        const extra = (idx === data.length - 1) ? valeurFinale : 0;
-        cashflows.push(row.cashflow + extra);
-      });
-      const tri = irr(cashflows);
-      el.triGlobal.textContent = isFinite(tri) ? pourcent(tri * 100) : "–";
-      setScore(cards.tri, tri * 100, 8, 4);
+    // -----------------------------
+    // Calcul de la projection
+    // -----------------------------
+    function computeProjection(h) {
+      const results = [];
+      const fraisNotaire = h.prixAchat * h.fraisNotairePct;
+      const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
+      const montantPret = coutTotal - h.apport;
 
-      // Graphique
-      const ctx = document.getElementById("cashflowChart").getContext("2d");
-      const labels = data.map(d => d.annee);
-      const cashData = data.map(d => d.cashflow);
-      const resData = data.map(d => d.resultat);
+      const annuitePret = annuite(montantPret, h.tauxPret, h.dureePret);
 
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Cash-flow",
-              data: cashData,
-              borderColor: "#4f6b4a",
-              backgroundColor: "rgba(79,107,74,0.08)",
-              tension: 0.2,
-              fill: true,
-              pointRadius: 3,
-              pointBackgroundColor: cashData.map(v =>
-                v > 0 ? "#4f6b4a" : (v < 0 ? "#c7524b" : "#d6a03a")
-              )
-            },
-            {
-              label: "Résultat d'exploitation",
-              data: resData,
-              borderColor: "#d6a03a",
-              backgroundColor: "rgba(214,160,58,0.08)",
-              tension: 0.2,
-              fill: false,
-              pointRadius: 2,
-              pointBackgroundColor: "#d6a03a"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  const val = ctx.raw;
-                  return ctx.dataset.label + ": " + euro(val);
-                }
-              }
-            }
-          },
-          scales: {
-            x: { grid: { display: false } },
-            y: {
-              ticks: {
-                callback: function(value) { return value.toLocaleString("fr-FR") + " €"; }
-              }
-            }
-          }
+      const annuitePretTravaux = annuite(
+        h.montantPretTravaux,
+        h.tauxPretTravaux,
+        h.dureePretTravaux
+      );
+
+      let crd = montantPret;
+      let crdTravaux = h.montantPretTravaux;
+
+      let loyers = h.loyersAnnuel;
+      let chargesNR = h.chargesNRAn1;
+      let capex = h.capexAnnuel;
+      let revenusServices = 0;
+
+      for (let an = 1; an <= h.dureeProjection; an++) {
+        if (an === 1) {
+          loyers = h.loyersAnnuel;
+          chargesNR = h.chargesNRAn1;
+          capex = h.capexAnnuel;
+        } else {
+          loyers = loyers * (1 + h.croissanceLoyers);
+          chargesNR = chargesNR * (1 + h.croissanceCharges);
+          capex = capex * (1 + h.croissanceCapex);
         }
+
+        if (an < h.anneeDebutServices) {
+          revenusServices = 0;
+        } else if (an === h.anneeDebutServices) {
+          revenusServices = h.revenusServicesAnDepart;
+        } else {
+          revenusServices = revenusServices * (1 + h.croissanceServices);
+        }
+
+        const totalRev = loyers + revenusServices;
+        const vacance = totalRev * h.vacance;
+        const loyersEncaisses = totalRev - vacance;
+        const fraisGestion = loyersEncaisses * h.fraisGestionPct;
+
+        const resultatExploitation =
+          loyersEncaisses - fraisGestion - chargesNR;
+
+        // prêt principal
+        const interets = crd * h.tauxPret;
+        const assurance = crd * h.tauxAssurance;
+        const amort = annuitePret - interets;
+
+        // prêt travaux simplifié : annuité constante à partir de l’année 2
+        let annuiteTrav = 0;
+        let interetsTrav = 0;
+        let amortTrav = 0;
+        if (an >= 2 && crdTravaux > 0) {
+          annuiteTrav = annuitePretTravaux;
+          interetsTrav = crdTravaux * h.tauxPretTravaux;
+          amortTrav = annuiteTrav - interetsTrav;
+        }
+
+        const cashflowAvantImp =
+          resultatExploitation - capex - annuitePret - assurance - annuiteTrav;
+
+        crd = Math.max(0, crd - amort);
+        if (an >= 2) {
+          crdTravaux = Math.max(0, crdTravaux - amortTrav);
+        }
+
+        const valeurBien =
+          coutTotal * Math.pow(1 + h.revaloBienPct, an);
+        const patrimoineNet = valeurBien - crd - crdTravaux;
+
+        results.push({
+          an,
+          loyersEncaisses,
+          chargesNR,
+          capex,
+          annuitePret,
+          annuiteTrav,
+          cashflowAvantImp,
+          interets,
+          assurance,
+          crd,
+          crdTravaux,
+          valeurBien,
+          patrimoineNet
+        });
+      }
+
+      return { coutTotal, montantPret, annuitePret, annuitePretTravaux, projection: results };
+    }
+
+    function computeIS(projection, h) {
+      return projection.map((row) => {
+        const benefImposable = Math.max(0, row.cashflowAvantImp);
+        let impot = 0;
+        if (benefImposable <= h.seuilISRedit) {
+          impot = benefImposable * h.tauxISRedit;
+        } else {
+          impot =
+            h.seuilISRedit * h.tauxISRedit +
+            (benefImposable - h.seuilISRedit) * h.tauxIS;
+        }
+        const cfApresIS = row.cashflowAvantImp - impot;
+        return { an: row.an, benefImposable, impot, cfApresIS };
+      });
+    }
+
+    function recompute() {
+      const { coutTotal, montantPret, annuitePret, projection } =
+        computeProjection(hypotheses);
+      const isRows = computeIS(projection, hypotheses);
+
+      // KPIs
+      const cf1 = projection[0]?.cashflowAvantImp ?? NaN;
+      const cfMoy =
+        projection.reduce((s, r) => s + r.cashflowAvantImp, 0) /
+        projection.length;
+      const patrimoineFinal =
+        projection[projection.length - 1]?.patrimoineNet ?? NaN;
+
+      const cashflowsAvant = [-hypotheses.apport];
+      const cashflowsApres = [-hypotheses.apport];
+      projection.forEach((row, idx) => {
+        const isRow = isRows[idx];
+        cashflowsAvant.push(row.cashflowAvantImp);
+        cashflowsApres.push(isRow.cfApresIS);
       });
 
-      // tableau détail
-      const tbody = document.querySelector("#tableDetails tbody");
+      const lastIdx = cashflowsAvant.length - 1;
+      const patrimoineLast =
+        projection[projection.length - 1]?.patrimoineNet ?? 0;
+      cashflowsAvant[lastIdx] += patrimoineLast;
+      cashflowsApres[lastIdx] += patrimoineLast;
+
+      const triAvant = irr(cashflowsAvant);
+      const triApres = irr(cashflowsApres);
+
+      document.getElementById("kpi-cf1").textContent = formatEuro(cf1);
+      document.getElementById("kpi-cf1-sub").textContent =
+        "avant IS – " + (cf1 >= 0 ? "positif" : "négatif");
+
+      document.getElementById("kpi-cf-moy").textContent = formatEuro(cfMoy);
+      document.getElementById("kpi-cf-moy-sub").textContent =
+        "moyenne annuelle (avant IS)";
+
+      document.getElementById("kpi-patrimoine").textContent =
+        formatEuro(patrimoineFinal);
+      document.getElementById("kpi-patrimoine-sub").textContent =
+        "après revalorisation & remboursement du prêt";
+
+      document.getElementById("kpi-tri-avant").textContent =
+        isFinite(triAvant) ? formatPercent(triAvant) : "–";
+      document.getElementById("kpi-tri-apres").textContent =
+        "après IS : " +
+        (isFinite(triApres) ? formatPercent(triApres) : "–");
+
+      // Tableau
+      const tbody = document.getElementById("projection-body");
       tbody.innerHTML = "";
-      data.forEach(row => {
+      projection.forEach((row, idx) => {
+        const isRow = isRows[idx];
         const tr = document.createElement("tr");
-        tr.className = row.cashflow >= 0 ? "positive" : "negative";
         tr.innerHTML = `
-          <td>${row.annee}</td>
-          <td>${euro(row.resultat)}</td>
-          <td>${euro(row.annuites)}</td>
-          <td>${euro(row.cashflow)}</td>
+          <td>${row.an}</td>
+          <td>${formatEuroSmall(row.loyersEncaisses)}</td>
+          <td>${formatEuroSmall(row.chargesNR + row.capex)}</td>
+          <td>${formatEuroSmall(row.annuitePret + row.annuiteTrav)}</td>
+          <td>${formatEuroSmall(row.cashflowAvantImp)}</td>
+          <td>${formatEuroSmall(isRow.impot)}</td>
+          <td>${formatEuroSmall(isRow.cfApresIS)}</td>
+          <td>${formatEuroSmall(row.crd + row.crdTravaux)}</td>
+          <td>${formatEuroSmall(row.valeurBien)}</td>
+          <td>${formatEuroSmall(row.patrimoineNet)}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // sauvegarde / chargement
-    function getCurrentState() {
-      const state = { version: 2, inputs: {}, travaux: [] };
-      inputIds.forEach(id => {
-        const el = document.getElementById(id);
-        state.inputs[id] = el ? el.value : "";
-      });
-      const rows = Array.from(travauxContainer.querySelectorAll(".travaux-row"));
-      rows.forEach(row => {
-        const inputsRow = row.querySelectorAll("input");
-        state.travaux.push({
-          montant: inputsRow[0].value,
-          annee: inputsRow[1].value
+    // -----------------------------
+    // Initialisation des inputs
+    // -----------------------------
+    function initInputs() {
+      document
+        .querySelectorAll("input[data-field]")
+        .forEach((input) => {
+          const field = input.dataset.field;
+          const type = input.dataset.type;
+          const value = hypotheses[field];
+          if (type === "percent") {
+            input.value = (value * 100).toString().replace(".", ",");
+          } else {
+            input.value = value;
+          }
+
+          input.addEventListener("input", () => {
+            const raw = input.value.replace(",", ".");
+            const num = parseFloat(raw);
+            let v = isNaN(num) ? 0 : num;
+            if (type === "percent") v = v / 100;
+            hypotheses[field] = v;
+            recompute();
+          });
         });
-      });
-      return state;
     }
-    function applyState(state) {
-      if (!state || !state.inputs) return;
-      Object.keys(state.inputs).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = state.inputs[id];
+
+    // -----------------------------
+    // Gestion des scénarios (localStorage)
+    // -----------------------------
+    const STORAGE_KEY = "aurea-scenarios";
+
+    function loadScenarioList() {
+      const select = document.getElementById("scenario-select");
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      select.innerHTML = "";
+      const optPlaceholder = document.createElement("option");
+      optPlaceholder.value = "";
+      optPlaceholder.textContent = "Scénarios sauvegardés…";
+      select.appendChild(optPlaceholder);
+      Object.keys(data).forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
       });
-      travauxContainer.innerHTML = "";
-      if (Array.isArray(state.travaux) && state.travaux.length > 0) {
-        state.travaux.forEach(t => {
-          const m = parseFloat(t.montant) || 0;
-          const a = parseInt(t.annee || "1", 10);
-          createTravauxRow(m, a);
-        });
-      } else {
-        createTravauxRow(20000, 1);
-        createTravauxRow(20000, 3);
-        createTravauxRow(20000, 5);
+    }
+
+    function saveScenario() {
+      const nameInput = document.getElementById("scenario-name");
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert("Donne un nom à ton scénario 🙂");
+        return;
       }
-      recalc();
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      data[name] = hypotheses;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadScenarioList();
     }
 
-    document.getElementById("btnSave").addEventListener("click", () => {
-      const state = getCurrentState();
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const today = new Date().toISOString().slice(0,10);
-      a.href = url;
-      a.download = "aurea-scenario-" + today + ".json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
+    function loadSelectedScenario() {
+      const select = document.getElementById("scenario-select");
+      const name = select.value;
+      if (!name) return;
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!data[name]) return;
+      hypotheses = { ...data[name] };
+      initInputs();
+      recompute();
+    }
 
-    const fileInput = document.getElementById("fileLoad");
-    document.getElementById("btnLoad").addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        try {
-          const state = JSON.parse(ev.target.result);
-          applyState(state);
-        } catch (err) {
-          alert("Impossible de lire ce fichier de scénario.");
-        }
-      };
-      reader.readAsText(file);
-      fileInput.value = "";
-    });
+    function deleteSelectedScenario() {
+      const select = document.getElementById("scenario-select");
+      const name = select.value;
+      if (!name) return;
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!data[name]) return;
+      if (!confirm(`Supprimer le scénario "${name}" ?`)) return;
+      delete data[name];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadScenarioList();
+    }
 
-    // premier calcul
-    recalc();
+    // -----------------------------
+    // Démarrage
+    // -----------------------------
+    window.addEventListener("DOMContentLoaded", () => {
+      initInputs();
+      loadScenarioList();
+      recompute();
+
+      document
+        .getElementById("btn-save")
+        .addEventListener("click", saveScenario);
+      document
+        .getElementById("btn-load")
+        .addEventListener("click", loadSelectedScenario);
+      document
+        .getElementById("btn-delete")
+        .addEventListener("click", deleteSelectedScenario);
+    });
   </script>
 </body>
 </html>
