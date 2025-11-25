@@ -200,7 +200,6 @@
     .result-card[data-score="bad"] .ok-chip span.label { color: var(--red); }
     .result-card[data-score="medium"] .ok-chip span.label { color: #a87a1c; }
     .result-card[data-score="good"] .ok-chip span.label { color: var(--green); }
-
     .kpi-row {
       display: flex;
       justify-content: space-between;
@@ -233,14 +232,12 @@
     th:first-child, td:first-child { text-align: left; }
     tr.negative td { color: var(--red); }
     tr.positive td { color: var(--green); }
-
     .footer-note {
       font-size: 10px;
       color: #a29c88;
       text-align: center;
       margin-top: 12px;
     }
-
     .btn {
       border-radius: 999px;
       border: 1px solid var(--border-soft);
@@ -265,637 +262,47 @@
 </head>
 <body>
   <div class="logo-block">
-    <!-- Ton logo : pense à uploader logo-aurea.png dans le repo -->
+    <!-- Ton logo : fichier logo-aurea.png dans le repo -->
     <img src="logo-aurea.png" alt="Aurea Saint-Maurice" />
     <h1><span>Aurea – Saint-Maurice</span></h1>
     <div class="subtitle">Simulateur de projet locatif</div>
   </div>
 
+  <!-- 1. Acquisition & financement -->
   <div class="card">
     <div class="pill">
       <span class="pill-dot"></span>
-      Paramètres principaux
+      Acquisition
     </div>
     <h2>1. Acquisition & financement</h2>
 
     <div class="grid-2">
       <div class="field inline-suffix">
-        <label>Prix d'acquisition</label>
-        <input id="prixAcquisition" type="number" value="300000" />
+        <label>Prix d'achat (net vendeur)</label>
+        <input id="prixAchat" type="number" value="300000" />
         <span>€</span>
       </div>
       <div class="field inline-suffix">
-        <label>Frais &amp; divers (%)</label>
-        <input id="fraisPourc" type="number" value="8" />
-        <span>%</span>
+        <label>Frais de notaire & divers</label>
+        <input id="fraisNotaire" type="number" value="24000" />
+        <span>€</span>
       </div>
     </div>
 
     <div class="grid-2">
       <div class="field inline-suffix">
-        <label>Budget travaux total</label>
+        <label>Budget travaux (enveloppe prêt travaux)</label>
         <input id="travauxTotal" type="number" value="60000" />
         <span>€</span>
         <small>sera séquencé plus bas</small>
       </div>
       <div class="field inline-suffix">
-        <label>Durée d'analyse (années)</label>
-        <input id="nbAnnees" type="number" value="20" />
-        <span>ans</span>
+        <label>Apport personnel</label>
+        <input id="apport" type="number" value="60000" />
+        <span>€</span>
       </div>
     </div>
 
     <div class="section-label">Prêt acquisition</div>
     <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Taux prêt acquisition</label>
-        <input id="tauxAcq" type="number" value="3.5" />
-        <span>%</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Durée prêt acquisition</label>
-        <input id="dureeAcq" type="number" value="20" />
-        <span>ans</span>
-      </div>
-    </div>
-
-    <div class="section-label">Prêts travaux</div>
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Taux prêts travaux</label>
-        <input id="tauxTravaux" type="number" value="3.5" />
-        <span>%</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Durée prêts travaux</label>
-        <input id="dureeTravaux" type="number" value="15" />
-        <span>ans</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Exploitation & séquencement
-    </div>
-    <h2>2. Loyers, charges & travaux</h2>
-
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Loyer mensuel année 1</label>
-        <input id="loyerMensuel" type="number" value="1800" />
-        <span>€</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Charges annuelles année 1</label>
-        <input id="chargesAnnuelles" type="number" value="5000" />
-        <span>€</span>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="field inline-suffix">
-        <label>Hausse loyers (% / an)</label>
-        <input id="hausseLoyers" type="number" value="2" />
-        <span>%</span>
-      </div>
-      <div class="field inline-suffix">
-        <label>Hausse charges (% / an)</label>
-        <input id="hausseCharges" type="number" value="2" />
-        <span>%</span>
-      </div>
-    </div>
-
-    <div class="section-label">Séquencement des travaux</div>
-    <div class="field">
-      <small>Répartis ton enveloppe de travaux par année de consommation. Le simulateur crée un mini-prêt pour chaque poste au moment où il est consommé.</small>
-    </div>
-
-    <div id="travauxContainer"></div>
-    <div class="field">
-      <button type="button" id="addTravauxRow" class="btn">+ Ajouter un poste travaux</button>
-      <small id="travauxTotalInfo"></small>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Synthèse
-    </div>
-    <h2>3. Résultats & cash-flow</h2>
-
-    <div class="field inline-suffix" style="max-width:160px;margin-bottom:12px;">
-      <label>Année affichée en résumé</label>
-      <input id="anneeResume" type="number" value="1" />
-      <span>n°</span>
-      <small>Ex : 1, 5, 10…</small>
-    </div>
-
-    <div class="results-grid">
-      <div class="result-card" id="cardRendementBrut">
-        <div class="result-title">Rendement brut</div>
-        <div class="result-value" id="rendementBrut">–</div>
-        <div class="result-sub">loyer annuel / coût total</div>
-      </div>
-      <div class="result-card" id="cardRendementNet">
-        <div class="result-title">Rendement net</div>
-        <div class="result-value" id="rendementNet">–</div>
-        <div class="result-sub">après charges &amp; taxe foncière estimée</div>
-      </div>
-      <div class="result-card" id="cardCashflow">
-        <div class="result-title">Cash-flow annuel <span class="ok-chip"><span class="label">OK</span></span></div>
-        <div class="result-value" id="cashflowAnnuel">–</div>
-        <div class="result-sub">année affichée</div>
-      </div>
-      <div class="result-card" id="cardDSCR">
-        <div class="result-title">DSCR <span class="ok-chip"><span class="label">OK</span></span></div>
-        <div class="result-value" id="dscr">–</div>
-        <div class="result-sub">résultat / annuités</div>
-      </div>
-    </div>
-
-    <div class="result-card" id="cardTRI" style="margin-top:6px;">
-      <div class="result-title">TRI projet (IRR)</div>
-      <div class="result-value" id="triGlobal">–</div>
-      <div class="result-sub">sur la durée d'analyse (avant impôt perso)</div>
-    </div>
-
-    <div class="kpi-row">
-      <span>Coût total projet (achat + frais + travaux)</span>
-      <span id="coutTotal">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Montant prêt acquisition</span>
-      <span id="mtPretAcq">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Montant total travaux séquencés</span>
-      <span id="mtTravauxSeq">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Résultat d'exploitation (année résumé)</span>
-      <span id="resExploit">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Annuité prêt acquisition</span>
-      <span id="annuiteAcq">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Annuités prêts travaux (année résumé)</span>
-      <span id="annuiteTravaux">–</span>
-    </div>
-    <div class="kpi-row">
-      <span>Annuité totale</span>
-      <span id="annuiteTotale">–</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Cash-flow dans le temps
-    </div>
-    <h2>4. Cash-flow année par année</h2>
-    <div class="section-label">Ligne verte : cash-flow. Ligne dorée : résultat d'exploitation.</div>
-    <div style="height:240px;">
-      <canvas id="cashflowChart"></canvas>
-    </div>
-
-    <table id="tableDetails">
-      <thead>
-        <tr>
-          <th>Année</th>
-          <th>Résultat expl.</th>
-          <th>Annuités</th>
-          <th>Cash-flow</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <div class="pill">
-      <span class="pill-dot"></span>
-      Sauvegarde
-    </div>
-    <h2>5. Sauvegarder / charger un scénario</h2>
-    <p style="font-size:12px;color:var(--text-muted);margin-top:0;">
-      Quand tu as un jeu d'hypothèses qui te convient, tu peux le sauvegarder dans un fichier
-      <code>.json</code> et le recharger plus tard (même sur un autre appareil).
-    </p>
-    <div class="save-load-row">
-      <button type="button" class="btn btn-primary" id="btnSave">Sauvegarder ce scénario</button>
-      <button type="button" class="btn" id="btnLoad">Charger un scénario</button>
-      <input type="file" id="fileLoad" accept="application/json" style="display:none;" />
-    </div>
-    <small style="font-size:11px;color:var(--text-muted);display:block;margin-top:6px;">
-      Astuce : tu peux te faire une bibliothèque de scénarios (Aurea 1, Aurea 2, etc.) et les charger à la volée.
-    </small>
-  </div>
-
-  <div class="footer-note">
-    Outil indicatif de travail. À utiliser comme support de discussion avec ta banque / ton conseil,
-    pas comme validation fiscale ou comptable définitive.
-  </div>
-
-  <script>
-    // --- utilitaires ---
-    function euro(n) {
-      if (!isFinite(n)) return "–";
-      return n.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " €";
-    }
-    function pourcent(n) {
-      if (!isFinite(n)) return "–";
-      return n.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " %";
-    }
-
-    function annuite(montant, taux, duree) {
-      if (montant <= 0 || duree <= 0) return 0;
-      const r = taux / 100;
-      if (r === 0) return montant / duree;
-      return montant * r / (1 - Math.pow(1 + r, -duree));
-    }
-
-    // TRI (IRR) annuel via Newton-Raphson
-    function irr(cashflows, guess = 0.05) {
-      let rate = guess;
-      for (let iter = 0; iter < 50; iter++) {
-        let npv = 0;
-        let dnpv = 0;
-        for (let t = 0; t < cashflows.length; t++) {
-          const cf = cashflows[t];
-          const denom = Math.pow(1 + rate, t);
-          npv += cf / denom;
-          dnpv -= t * cf / (denom * (1 + rate));
-        }
-        if (Math.abs(npv) < 1e-6) return rate;
-        const newRate = rate - npv / dnpv;
-        if (!isFinite(newRate)) break;
-        rate = newRate;
-      }
-      return NaN;
-    }
-
-    const travauxContainer = document.getElementById("travauxContainer");
-    const addTravauxBtn = document.getElementById("addTravauxRow");
-    const nbAnneesInput = document.getElementById("nbAnnees");
-    const travauxTotalInput = document.getElementById("travauxTotal");
-    const travauxTotalInfo = document.getElementById("travauxTotalInfo");
-
-    function createTravauxRow(montant = 10000, annee = 1) {
-      const wrap = document.createElement("div");
-      wrap.className = "travaux-row grid-2";
-
-      const f1 = document.createElement("div");
-      f1.className = "field inline-suffix";
-      const l1 = document.createElement("label");
-      l1.textContent = "Montant poste";
-      const i1 = document.createElement("input");
-      i1.type = "number";
-      i1.value = montant;
-      const s1 = document.createElement("span");
-      s1.textContent = "€";
-      f1.appendChild(l1); f1.appendChild(i1); f1.appendChild(s1);
-
-      const f2 = document.createElement("div");
-      f2.className = "field inline-suffix";
-      const l2 = document.createElement("label");
-      l2.textContent = "Année de conso.";
-      const i2 = document.createElement("input");
-      i2.type = "number";
-      i2.value = annee;
-      const s2 = document.createElement("span");
-      s2.textContent = "n°";
-      f2.appendChild(l2); f2.appendChild(i2); f2.appendChild(s2);
-
-      wrap.appendChild(f1);
-      wrap.appendChild(f2);
-
-      [i1, i2].forEach(inp => inp.addEventListener("input", recalc));
-      travauxContainer.appendChild(wrap);
-    }
-
-    addTravauxBtn.addEventListener("click", () => {
-      const annee = Math.min(parseInt(nbAnneesInput.value || "20", 10), 30);
-      createTravauxRow(10000, annee);
-      recalc();
-    });
-
-    // valeurs de départ : 3 postes étalés
-    createTravauxRow(20000, 1);
-    createTravauxRow(20000, 3);
-    createTravauxRow(20000, 5);
-
-    const inputIds = [
-      "prixAcquisition","fraisPourc","travauxTotal","nbAnnees",
-      "tauxAcq","dureeAcq","tauxTravaux","dureeTravaux",
-      "loyerMensuel","chargesAnnuelles","hausseLoyers","hausseCharges",
-      "anneeResume"
-    ];
-    const inputs = inputIds.map(id => document.getElementById(id));
-    inputs.forEach(inp => inp.addEventListener("input", recalc));
-
-    const el = {
-      rendementBrut: document.getElementById("rendementBrut"),
-      rendementNet: document.getElementById("rendementNet"),
-      cashflowAnnuel: document.getElementById("cashflowAnnuel"),
-      dscr: document.getElementById("dscr"),
-      triGlobal: document.getElementById("triGlobal"),
-      coutTotal: document.getElementById("coutTotal"),
-      mtPretAcq: document.getElementById("mtPretAcq"),
-      mtTravauxSeq: document.getElementById("mtTravauxSeq"),
-      resExploit: document.getElementById("resExploit"),
-      annuiteAcq: document.getElementById("annuiteAcq"),
-      annuiteTravaux: document.getElementById("annuiteTravaux"),
-      annuiteTotale: document.getElementById("annuiteTotale"),
-    };
-
-    const cards = {
-      rendementBrut: document.getElementById("cardRendementBrut"),
-      rendementNet: document.getElementById("cardRendementNet"),
-      cashflow: document.getElementById("cardCashflow"),
-      dscr: document.getElementById("cardDSCR"),
-      tri: document.getElementById("cardTRI"),
-    };
-
-    let chart;
-
-    function recalc() {
-      const prix = parseFloat(document.getElementById("prixAcquisition").value) || 0;
-      const fraisPct = parseFloat(document.getElementById("fraisPourc").value) || 0;
-      const travauxTotal = parseFloat(travauxTotalInput.value) || 0;
-      const nbAnnees = Math.max(1, parseInt(nbAnneesInput.value || "20", 10));
-      const tauxAcq = parseFloat(document.getElementById("tauxAcq").value) || 0;
-      const dureeAcq = Math.max(1, parseInt(document.getElementById("dureeAcq").value || "20", 10));
-      const tauxTravaux = parseFloat(document.getElementById("tauxTravaux").value) || 0;
-      const dureeTravaux = Math.max(1, parseInt(document.getElementById("dureeTravaux").value || "15", 10));
-      const loyerMensuel = parseFloat(document.getElementById("loyerMensuel").value) || 0;
-      const chargesAnn = parseFloat(document.getElementById("chargesAnnuelles").value) || 0;
-      const hausseL = parseFloat(document.getElementById("hausseLoyers").value) || 0;
-      const hausseC = parseFloat(document.getElementById("hausseCharges").value) || 0;
-      let anneeResume = Math.max(1, parseInt(document.getElementById("anneeResume").value || "1", 10));
-      if (anneeResume > nbAnnees) anneeResume = nbAnnees;
-      document.getElementById("anneeResume").value = anneeResume;
-
-      const frais = prix * fraisPct / 100;
-      const coutTotal = prix + frais + travauxTotal;
-      el.coutTotal.textContent = euro(coutTotal);
-
-      const mtPretAcq = prix + frais;
-      el.mtPretAcq.textContent = euro(mtPretAcq);
-
-      const rows = Array.from(travauxContainer.querySelectorAll(".travaux-row"));
-      const seq = [];
-      let sommeTravaux = 0;
-      rows.forEach(row => {
-        const inputsRow = row.querySelectorAll("input");
-        const mt = parseFloat(inputsRow[0].value) || 0;
-        let an = parseInt(inputsRow[1].value || "1", 10);
-        if (an < 1) an = 1;
-        if (an > nbAnnees) an = nbAnnees;
-        inputsRow[1].value = an;
-        if (mt > 0) {
-          seq.push({ montant: mt, annee: an });
-          sommeTravaux += mt;
-        }
-      });
-      el.mtTravauxSeq.textContent = euro(sommeTravaux);
-      travauxTotalInfo.textContent = "Total séquencé : " + euro(sommeTravaux) + " / enveloppe " + euro(travauxTotal);
-      travauxTotalInfo.style.color = (sommeTravaux > travauxTotal) ? "var(--red)" : "var(--text-muted)";
-
-      const annAcq = annuite(mtPretAcq, tauxAcq, dureeAcq);
-      el.annuiteAcq.textContent = euro(annAcq);
-
-      const data = [];
-      let loyerAnn = loyerMensuel * 12;
-      let charges = chargesAnn;
-
-      for (let an = 1; an <= nbAnnees; an++) {
-        const resultat = loyerAnn - charges;
-
-        let annTrav = 0;
-        seq.forEach(tr => {
-          if (an >= tr.annee && an < tr.annee + dureeTravaux) {
-            annTrav += annuite(tr.montant, tauxTravaux, dureeTravaux);
-          }
-        });
-
-        const annTotale = (an <= dureeAcq ? annAcq : 0) + annTrav;
-        const cashflow = resultat - annTotale;
-
-        data.push({
-          annee: an,
-          loyerAnn,
-          charges,
-          resultat,
-          annuites: annTotale,
-          cashflow
-        });
-
-        loyerAnn *= 1 + hausseL / 100;
-        charges *= 1 + hausseC / 100;
-      }
-
-      const ligneRes = data[anneeResume - 1] || data[data.length - 1];
-
-      const rendementBrut = ligneRes ? (ligneRes.loyerAnn / coutTotal * 100) : NaN;
-      const rendementNet = ligneRes ? (ligneRes.resultat / coutTotal * 100) : NaN;
-      el.rendementBrut.textContent = pourcent(rendementBrut);
-      el.rendementNet.textContent = pourcent(rendementNet);
-
-      el.resExploit.textContent = euro(ligneRes ? ligneRes.resultat : NaN);
-      el.annuiteTravaux.textContent = euro(ligneRes ? (ligneRes.annuites - (anneeResume <= dureeAcq ? annAcq : 0)) : NaN);
-      el.annuiteTotale.textContent = euro(ligneRes ? ligneRes.annuites : NaN);
-      el.cashflowAnnuel.textContent = euro(ligneRes ? ligneRes.cashflow : NaN);
-
-      const dscr = ligneRes && ligneRes.annuites > 0 ? ligneRes.resultat / ligneRes.annuites : NaN;
-      el.dscr.textContent = isFinite(dscr) ? dscr.toLocaleString("fr-FR", { maximumFractionDigits: 2 }) : "–";
-
-      function setScore(card, value, goodThresh, mediumThresh, reverse = false) {
-        let score = "medium";
-        if (!isFinite(value)) {
-          card.dataset.score = "medium";
-          return;
-        }
-        if (!reverse) {
-          if (value >= goodThresh) score = "good";
-          else if (value >= mediumThresh) score = "medium";
-          else score = "bad";
-        } else {
-          if (value <= goodThresh) score = "good";
-          else if (value <= mediumThresh) score = "medium";
-          else score = "bad";
-        }
-        card.dataset.score = score;
-      }
-
-      setScore(cards.rendementBrut, rendementBrut, 7, 4);
-      setScore(cards.rendementNet, rendementNet, 5, 3.5);
-      setScore(cards.cashflow, ligneRes ? ligneRes.cashflow : NaN, 0, -100);
-      setScore(cards.dscr, dscr, 1.3, 1.1);
-
-      const cashflows = [];
-      cashflows.push(-coutTotal);
-      data.forEach((row, idx) => {
-        const extra = (idx === data.length - 1) ? prix : 0;
-        cashflows.push(row.cashflow + extra);
-      });
-      const tri = irr(cashflows);
-      el.triGlobal.textContent = isFinite(tri) ? pourcent(tri * 100) : "–";
-      setScore(cards.tri, tri * 100, 8, 4);
-
-      const ctx = document.getElementById("cashflowChart").getContext("2d");
-      const labels = data.map(d => d.annee);
-      const cashData = data.map(d => d.cashflow);
-      const resData = data.map(d => d.resultat);
-
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Cash-flow",
-              data: cashData,
-              borderColor: "#4f6b4a",
-              backgroundColor: "rgba(79,107,74,0.08)",
-              tension: 0.2,
-              fill: true,
-              pointRadius: 3,
-              pointBackgroundColor: cashData.map(v =>
-                v > 0 ? "#4f6b4a" : (v < 0 ? "#c7524b" : "#d6a03a")
-              )
-            },
-            {
-              label: "Résultat d'exploitation",
-              data: resData,
-              borderColor: "#d6a03a",
-              backgroundColor: "rgba(214,160,58,0.08)",
-              tension: 0.2,
-              fill: false,
-              pointRadius: 2,
-              pointBackgroundColor: "#d6a03a"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  const val = ctx.raw;
-                  return ctx.dataset.label + ": " + euro(val);
-                }
-              }
-            }
-          },
-          scales: {
-            x: { grid: { display: false } },
-            y: {
-              ticks: {
-                callback: function(value) { return value.toLocaleString("fr-FR") + " €"; }
-              }
-            }
-          }
-        }
-      });
-
-      const tbody = document.querySelector("#tableDetails tbody");
-      tbody.innerHTML = "";
-      data.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.className = row.cashflow >= 0 ? "positive" : "negative";
-        tr.innerHTML = `
-          <td>${row.annee}</td>
-          <td>${euro(row.resultat)}</td>
-          <td>${euro(row.annuites)}</td>
-          <td>${euro(row.cashflow)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // --- sauvegarde / chargement ---
-    function getCurrentState() {
-      const state = { version: 1, inputs: {}, travaux: [] };
-      inputIds.forEach(id => {
-        const el = document.getElementById(id);
-        state.inputs[id] = el ? el.value : "";
-      });
-      const rows = Array.from(travauxContainer.querySelectorAll(".travaux-row"));
-      rows.forEach(row => {
-        const inputsRow = row.querySelectorAll("input");
-        state.travaux.push({
-          montant: inputsRow[0].value,
-          annee: inputsRow[1].value
-        });
-      });
-      return state;
-    }
-
-    function applyState(state) {
-      if (!state || !state.inputs) return;
-      Object.keys(state.inputs).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = state.inputs[id];
-      });
-      travauxContainer.innerHTML = "";
-      if (Array.isArray(state.travaux) && state.travaux.length > 0) {
-        state.travaux.forEach(t => {
-          const m = parseFloat(t.montant) || 0;
-          const a = parseInt(t.annee || "1", 10);
-          createTravauxRow(m, a);
-        });
-      } else {
-        createTravauxRow(20000, 1);
-        createTravauxRow(20000, 3);
-        createTravauxRow(20000, 5);
-      }
-      recalc();
-    }
-
-    document.getElementById("btnSave").addEventListener("click", () => {
-      const state = getCurrentState();
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const today = new Date().toISOString().slice(0,10);
-      a.href = url;
-      a.download = "aurea-scenario-" + today + ".json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
-
-    const fileInput = document.getElementById("fileLoad");
-    document.getElementById("btnLoad").addEventListener("click", () => fileInput.click());
-
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        try {
-          const state = JSON.parse(ev.target.result);
-          applyState(state);
-        } catch (err) {
-          alert("Impossible de lire ce fichier de scénario.");
-        }
-      };
-      reader.readAsText(file);
-      fileInput.value = "";
-    });
-
-    // premier calcul au chargement
-    recalc();
-  </script>
-</body>
-</html>
+      <div class="fiel
