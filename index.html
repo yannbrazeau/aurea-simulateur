@@ -226,8 +226,8 @@
       gap: 10px;
     }
 
-    @media (min-width: 600px) {
-      .summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (min-width: 650px) {
+      .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     }
 
     .kpi-card {
@@ -238,7 +238,6 @@
       transition: background 0.2s ease, border-color 0.2s ease;
     }
 
-    /* Variantes de performance */
     .kpi-positive {
       background: linear-gradient(135deg, #ecfdf3, #dcfce7);
       border-color: rgba(34, 197, 94, 0.55);
@@ -285,7 +284,7 @@
       border-radius: 999px;
       border: 1px solid var(--border-soft);
       font-size: 12px;
-      min-width: 140px;
+      min-width: 160px;
     }
 
     button {
@@ -332,7 +331,7 @@
       font-size: 12px;
       border: 1px solid var(--border-soft);
       background: #faf7ee;
-      min-width: 150px;
+      min-width: 160px;
     }
 
     .table-wrapper {
@@ -401,7 +400,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Bloc acquisition</div>
-              <div class="card-subtitle">Montant du projet & financement</div>
+              <div class="card-subtitle">Montant du projet &amp; financement</div>
             </div>
             <span class="pill">Entrées</span>
           </div>
@@ -421,7 +420,7 @@
               </div>
             </div>
             <div class="field">
-              <label>Travaux initiaux</label>
+              <label>Travaux initiaux financés</label>
               <div class="field-row">
                 <input type="number" data-field="travauxInitiaux" />
                 <span class="unit">€</span>
@@ -459,14 +458,37 @@
           </div>
         </div>
 
-        <!-- PRET TRAVAUX EDITABLE -->
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Prêt travaux</div>
-              <div class="card-subtitle">Tranches à répartir sur 20 ans</div>
+              <div class="card-subtitle">4 tranches éditables (comme l'Excel)</div>
             </div>
           </div>
+          <div class="inputs-grid">
+            <div class="field">
+              <label>Montant total prêt travaux</label>
+              <div class="field-row">
+                <input type="number" data-field="montantPretTravaux" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Durée prêt travaux</label>
+              <div class="field-row">
+                <input type="number" data-field="dureePretTravaux" />
+                <span class="unit">ans</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux prêt travaux</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxPretTravaux" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+          </div>
+
           <div class="inputs-grid">
             <div class="field">
               <label>Tranche 1</label>
@@ -502,7 +524,7 @@
             </div>
           </div>
           <p class="hint">
-            Chaque tranche est amortie sur 20 ans à partir de l’année indiquée, avec le même taux que le prêt travaux.
+            Par défaut : 6 k€ en année 2, 20 k€ en année 3, 9 k€ en année 4, 15 k€ en année 6 (total 50 k€).
           </p>
         </div>
 
@@ -510,7 +532,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Loyers & services</div>
-              <div class="card-subtitle">Hypothèses d’exploitation</div>
+              <div class="card-subtitle">Hypothèses d’exploitation (Base)</div>
             </div>
           </div>
           <div class="inputs-grid cols-2">
@@ -578,12 +600,12 @@
               </div>
             </div>
             <div class="field">
-              <label>Capex annuel (provision)</label>
+              <label>Capex annuel cible</label>
               <div class="field-row">
                 <input type="number" data-field="capexAnnuel" />
                 <span class="unit">€</span>
               </div>
-              <small>Provision pour gros travaux.</small>
+              <small>Pour gros travaux (rampe comme dans l'Excel).</small>
             </div>
             <div class="field">
               <label>Croissance capex</label>
@@ -606,7 +628,7 @@
           <div class="card-header">
             <div>
               <div class="card-title">Fiscalité IS</div>
-              <div class="card-subtitle">Calcul du cash-flow après impôt</div>
+              <div class="card-subtitle">Cash-flow après impôt</div>
             </div>
           </div>
           <div class="inputs-grid cols-2">
@@ -640,7 +662,7 @@
             </div>
           </div>
           <p class="hint">
-            Hypothèse simple : l’IS est calculé sur le cash-flow avant impôt positif (pas de fiscalité sur la revente dans cette V1).
+            V4 calée sur les hypothèses "Base" de ton Excel : IS réduit à 15 % jusqu'à 42 500 €, puis 25 %.
           </p>
         </div>
       </div>
@@ -656,12 +678,12 @@
           </div>
           <div class="summary-grid">
             <div class="kpi-card" id="kpi-card-cf1">
-              <div class="kpi-label">Cash-flow année 1</div>
+              <div class="kpi-label">CF année 1</div>
               <div class="kpi-value" id="kpi-cf1">–</div>
               <div class="kpi-sub" id="kpi-cf1-sub">avant IS</div>
             </div>
             <div class="kpi-card" id="kpi-card-cf-moy">
-              <div class="kpi-label">Cash-flow moyen</div>
+              <div class="kpi-label">CF moyen</div>
               <div class="kpi-value" id="kpi-cf-moy">–</div>
               <div class="kpi-sub" id="kpi-cf-moy-sub">sur la période</div>
             </div>
@@ -675,21 +697,25 @@
               <div class="kpi-value" id="kpi-tri-avant">–</div>
               <div class="kpi-sub" id="kpi-tri-apres">après IS : –</div>
             </div>
+            <div class="kpi-card" id="kpi-card-emprunt">
+              <div class="kpi-label">Somme empruntée</div>
+              <div class="kpi-value" id="kpi-emprunt">–</div>
+              <div class="kpi-sub" id="kpi-emprunt-sub">prêt principal + travaux</div>
+            </div>
           </div>
 
           <hr style="border: none; border-top: 1px dashed #e5decf; margin: 10px 0;" />
 
           <div class="card-subtitle" style="margin-bottom: 4px;">Scénarios</div>
           <div class="scenario-bar">
-            <input id="scenario-name" placeholder="Nom du scénario (ex : Base, Optimiste…)" />
+            <input id="scenario-name" placeholder="Nom du scénario (Base, Optimiste…)" />
             <button id="btn-save">💾 Sauvegarder</button>
             <select id="scenario-select"></select>
             <button class="secondary" id="btn-load">⬇ Charger</button>
             <button class="danger" id="btn-delete">🗑 Supprimer</button>
           </div>
           <p class="hint">
-            Les scénarios sont sauvegardés localement dans votre navigateur (localStorage).  
-            Vous pouvez en créer plusieurs, les recharger et les modifier.
+            Les scénarios sont stockés dans ton navigateur (localStorage) : tu peux en créer, les recharger et les modifier.
           </p>
         </div>
 
@@ -701,7 +727,6 @@
             </div>
           </div>
 
-          <!-- COURBE -->
           <div style="height: 220px; margin-bottom: 10px;">
             <canvas id="cfChart"></canvas>
           </div>
@@ -709,7 +734,6 @@
             Courbe du cash-flow avant et après IS. Touchez les points sur mobile pour voir le détail.
           </p>
 
-          <!-- TABLEAU -->
           <div class="table-wrapper">
             <table>
               <thead>
@@ -717,7 +741,7 @@
                   <th>Année</th>
                   <th>Loyers encaissés</th>
                   <th>Charges + capex</th>
-                  <th>Annuités</th>
+                  <th>Annuités (prêt + travaux)</th>
                   <th>CF avant IS</th>
                   <th>Impôt IS</th>
                   <th>CF après IS</th>
@@ -736,60 +760,66 @@
     </div>
   </div>
 
+  <!-- Le JS arrive dans les blocs 2 et 3 -->
   <script>
     // -----------------------------
-    // Données initiales
+    // Hypothèses "Base" issues de l'Excel
     // -----------------------------
     const defaultHypotheses = {
-      prixAchat: 765000,
-      fraisNotairePct: 0.0668,
-      travauxInitiaux: 50000,
-      apport: 235000,
-      dureePret: 20,
-      tauxPret: 0.0309,
-      tauxAssurance: 0.0045,
+      prixAchat: 765000,          // Prix du bien
+      fraisNotairePct: 0.0668,    // 6,68 % du prix
+      travauxInitiaux: 70000,     // Travaux initiaux
+      apport: 235000,             // Apport (Base)
+      dureePret: 20,              // Durée prêt principal
+      tauxPret: 0.0309,           // 3,09 %
+      tauxAssurance: 0.0045,      // 0,45 % du CRD
 
-      loyersAnnuel: 50280,
-      croissanceLoyers: 0.02,
-      vacance: 0.02,
-      fraisGestionPct: 0.01,
-      chargesNRAn1: 6802,
-      croissanceCharges: 0.025,
-      revaloBienPct: 0.02,
+      loyersAnnuel: 50280,        // Loyers annuels bruts année 1
+      croissanceLoyers: 0.02,     // +2 % / an
+      vacance: 0.02,              // 2 % de vacance
+      fraisGestionPct: 0.01,      // 1 % des loyers encaissés
+      chargesNRAn1: 6802,         // Charges non récupérables année 1
+      croissanceCharges: 0.025,   // +2,5 % / an
+      revaloBienPct: 0.02,        // +2 % / an
 
-      anneeDebutServices: 2,
-      revenusServicesAnDepart: 1500,
-      croissanceServices: 0.03,
+      anneeDebutServices: 2,         // Début des revenus de services
+      revenusServicesAnDepart: 1500, // Montant initial des services
+      croissanceServices: 0.02,      // +2 % / an (comme l'Excel Base)
 
-      capexAnnuel: 3000,
-      croissanceCapex: 0.0,
+      capexAnnuel: 3000,          // Niveau cible de capex (à partir de l'année 10)
+      croissanceCapex: 0.0,       // 0 % dans la Base
 
-      tauxISRedit: 0.15,
-      seuilISRedit: 42500,
-      tauxIS: 0.25,
-      dureeProjection: 20,
+      tauxISRedit: 0.15,          // 15 %
+      seuilISRedit: 42500,        // Seuil IS réduit
+      tauxIS: 0.25,               // 25 %
+      dureeProjection: 20,        // 20 ans de projection
 
-      montantPretTravaux: 50000,
-      dureePretTravaux: 20,
-      tauxPretTravaux: 0.0309
+      montantPretTravaux: 50000,  // Total prêt travaux
+      dureePretTravaux: 20,       // Durée prêt travaux
+      tauxPretTravaux: 0.0309     // Même taux que le prêt principal
     };
 
-    // Tranches du prêt travaux (comme ton Excel)
+    // Tranches du prêt travaux (4 tranches comme dans ton fichier base)
     const defaultTranches = [
-      { montant: 6000, debut: 2 },
-      { montant: 20000, debut: 3 },
-      { montant: 9000, debut: 4 },
-      { montant: 15000, debut: 6 }
+      { montant: 6000, debut: 2 },   // 6 k€ année 2
+      { montant: 20000, debut: 3 },  // 20 k€ année 3
+      { montant: 9000, debut: 4 },   // 9 k€ année 4
+      { montant: 15000, debut: 6 }   // 15 k€ année 6
     ];
 
     let hypotheses = { ...defaultHypotheses };
     let trancheConfig = defaultTranches.map(t => ({ ...t }));
     let cfChart = null;
 
+    // Pour les KPIs "Somme empruntée"
+    let lastMontantPretPrincipal = 0;
+    let lastSommeEmprunteeTotale = 0;
+
     // -----------------------------
     // Utilitaires math
     // -----------------------------
     function annuite(capital, taux, duree) {
+      if (capital <= 0 || duree <= 0) return 0;
       if (taux === 0) return capital / duree;
       const r = taux;
       return (capital * r) / (1 - Math.pow(1 + r, -duree));
@@ -821,7 +851,7 @@
       return (x * 100).toFixed(1).replace(".", ",") + " %";
     }
 
-    // IRR par dichotomie
+    // IRR (TRI) par dichotomie
     function irr(cashflows) {
       let low = -0.9;
       let high = 1.5;
@@ -860,6 +890,7 @@
       const rate = h.tauxPretTravaux;
       const nper = h.dureePretTravaux;
 
+      // normalisation des tranches : on ne garde que celles qui ont montant & début
       const tranches = tranchesSource
         .filter(t => t.montant && t.debut)
         .map((t) => ({
@@ -907,35 +938,62 @@
     }
 
     // -----------------------------
-    // Projection globale
+    // Capex année par année – calé sur ton Excel
+    // -----------------------------
+    function capexForYear(year, h) {
+      // D'après l'onglet Projection_annuelle de ton fichier :
+      // Années 1 à 5 : 0
+      // Années 6 à 7 : 500
+      // Année 8       : 1500
+      // Année 9       : 2000
+      // Année >= 10   : capexAnnuel * (1 + croissanceCapex)^(année - 10)
+      if (year <= 5) return 0;
+      if (year === 6 || year === 7) return 500;
+      if (year === 8) return 1500;
+      if (year === 9) return 2000;
+
+      const n = year - 10; // 0 pour l'année 10
+      return h.capexAnnuel * Math.pow(1 + h.croissanceCapex, n);
+    }
+
+    // -----------------------------
+    // Projection globale (comme "Projection_annuelle" de l'Excel)
     // -----------------------------
     function computeProjection(h, tranches) {
       const results = [];
+
+      // Coût d'acquisition + travaux initiaux (financés via prêt principal)
       const fraisNotaire = h.prixAchat * h.fraisNotairePct;
       const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
-      const montantPret = coutTotal - h.apport;
 
-      const annuitePret = annuite(montantPret, h.tauxPret, h.dureePret);
+      // Hypothèse : le prêt principal finance le coût total - apport
+      const montantPretPrincipal = coutTotal - h.apport;
+      const annuitePret = annuite(montantPretPrincipal, h.tauxPret, h.dureePret);
+
+      // Prêt travaux = tranches (6k, 20k, 9k, 15k = 50 k€)
       const pretTravSchedule = computePretTravauxSchedule(h, tranches);
 
-      let crd = montantPret;
+      // On conserve les montants pour les KPIs
+      lastMontantPretPrincipal = montantPretPrincipal;
+      lastSommeEmprunteeTotale = montantPretPrincipal + h.montantPretTravaux;
+
+      let crd = montantPretPrincipal;
 
       let loyers = h.loyersAnnuel;
       let chargesNR = h.chargesNRAn1;
-      let capex = h.capexAnnuel;
       let revenusServices = 0;
 
       for (let an = 1; an <= h.dureeProjection; an++) {
+        // Loyers et charges non récupérables (croissance annuelle)
         if (an === 1) {
           loyers = h.loyersAnnuel;
           chargesNR = h.chargesNRAn1;
-          capex = h.capexAnnuel;
         } else {
           loyers = loyers * (1 + h.croissanceLoyers);
           chargesNR = chargesNR * (1 + h.croissanceCharges);
-          capex = capex * (1 + h.croissanceCapex);
         }
 
+        // Revenus de services
         if (an < h.anneeDebutServices) {
           revenusServices = 0;
         } else if (an === h.anneeDebutServices) {
@@ -949,23 +1007,29 @@
         const loyersEncaisses = totalRev - vacance;
         const fraisGestion = loyersEncaisses * h.fraisGestionPct;
 
+        // Résultat d'exploitation (avant capex)
         const resultatExploitation =
           loyersEncaisses - fraisGestion - chargesNR;
 
+        // Intérêts + assurance + amortissement du prêt principal
         const interets = crd * h.tauxPret;
         const assurance = crd * h.tauxAssurance;
         const amort = annuitePret - interets;
 
+        // Prêt travaux pour cette année
         const pretTravAn = pretTravSchedule[an - 1] || {
           annuite: 0,
           interets: 0,
           amort: 0,
           crd: 0
         };
-
         const annuiteTrav = pretTravAn.annuite;
         const crdTravaux = pretTravAn.crd;
 
+        // Capex (provision gros travaux) selon la rampe Excel
+        const capex = capexForYear(an, h);
+
+        // Cash-flow avant IS (logique Excel)
         const cashflowAvantImp =
           resultatExploitation -
           capex -
@@ -973,10 +1037,14 @@
           assurance -
           annuiteTrav;
 
+        // Mise à jour du capital restant dû du prêt principal
         crd = Math.max(0, crd - amort);
 
+        // Valeur du bien revalorisée
         const valeurBien =
           coutTotal * Math.pow(1 + h.revaloBienPct, an);
+
+        // Patrimoine net : valeur bien - dettes (prêt principal + travaux)
         const patrimoineNet = valeurBien - crd - crdTravaux;
 
         results.push({
@@ -987,6 +1055,8 @@
           annuitePret,
           annuiteTrav,
           cashflowAvantImp,
+          interets,
+          assurance,
           crd,
           crdTravaux,
           valeurBien,
@@ -996,12 +1066,15 @@
 
       return {
         coutTotal,
-        montantPret,
+        montantPretPrincipal,
         annuitePret,
         projection: results
       };
     }
 
+    // -----------------------------
+    // IS et CF après IS – même logique que l'Excel
+    // -----------------------------
     function computeIS(projection, h) {
       return projection.map((row) => {
         const benefImposable = Math.max(0, row.cashflowAvantImp);
@@ -1084,7 +1157,7 @@
     }
 
     // -----------------------------
-    // Couleurs de performance des KPI
+    // Couleurs de performance des KPI (logique proche de ton Excel)
     // -----------------------------
     function setKpiState(cardId, state) {
       const el = document.getElementById(cardId);
@@ -1096,22 +1169,26 @@
     }
 
     // -----------------------------
-    // Recalcul global
+    // Recalcul global (comme si on appuyait sur F9 dans Excel)
     // -----------------------------
     function recompute() {
       const { projection } = computeProjection(hypotheses, trancheConfig);
       const isRows = computeIS(projection, hypotheses);
 
-      // KPIs
-      const cf1 = projection[0]?.cashflowAvantImp ?? NaN;
+      if (projection.length === 0) return;
+
+      // KPIs principaux
+      const cf1 = projection[0].cashflowAvantImp;
       const cfMoy =
         projection.reduce((s, r) => s + r.cashflowAvantImp, 0) /
-        (projection.length || 1);
+        projection.length;
       const patrimoineFinal =
-        projection[projection.length - 1]?.patrimoineNet ?? NaN;
+        projection[projection.length - 1].patrimoineNet;
 
+      // Cashflows pour TRI (avant et après IS)
       const cashflowsAvant = [-hypotheses.apport];
       const cashflowsApres = [-hypotheses.apport];
+
       projection.forEach((row, idx) => {
         const isRow = isRows[idx];
         cashflowsAvant.push(row.cashflowAvantImp);
@@ -1120,7 +1197,7 @@
 
       const lastIdx = cashflowsAvant.length - 1;
       const patrimoineLast =
-        projection[projection.length - 1]?.patrimoineNet ?? 0;
+        projection[projection.length - 1].patrimoineNet;
       cashflowsAvant[lastIdx] += patrimoineLast;
       cashflowsApres[lastIdx] += patrimoineLast;
 
@@ -1139,7 +1216,7 @@
       document.getElementById("kpi-patrimoine").textContent =
         formatEuro(patrimoineFinal);
       document.getElementById("kpi-patrimoine-sub").textContent =
-        "après revalorisation & remboursement du prêt";
+        "après revalorisation & remboursement des prêts";
 
       document.getElementById("kpi-tri-avant").textContent =
         isFinite(triAvant) ? formatPercent(triAvant) : "–";
@@ -1147,7 +1224,16 @@
         "après IS : " +
         (isFinite(triApres) ? formatPercent(triApres) : "–");
 
-      // Couleurs des KPI (logique simple, à ajuster si tu veux coller au centime à l’Excel)
+      // Somme empruntée
+      document.getElementById("kpi-emprunt").textContent =
+        formatEuro(lastSommeEmprunteeTotale);
+      document.getElementById("kpi-emprunt-sub").textContent =
+        "Prêt principal : " +
+        formatEuro(lastMontantPretPrincipal) +
+        " · Travaux : " +
+        formatEuro(hypotheses.montantPretTravaux);
+
+      // Couleurs KPI – seuils simples (à ajuster si tu veux coller aux seuils exacts d’Excel)
       // CF année 1
       if (cf1 > 0) setKpiState("kpi-card-cf1", "positive");
       else if (cf1 > -2000) setKpiState("kpi-card-cf1", "neutral");
@@ -1170,7 +1256,7 @@
       else if (triApres >= 0.03) setKpiState("kpi-card-tri", "neutral");
       else setKpiState("kpi-card-tri", "negative");
 
-      // Tableau
+      // Tableau annuel
       const tbody = document.getElementById("projection-body");
       tbody.innerHTML = "";
       projection.forEach((row, idx) => {
@@ -1191,7 +1277,7 @@
         tbody.appendChild(tr);
       });
 
-      // Courbe
+      // Courbe CF
       const years = projection.map((r) => r.an);
       const cfAvantArr = projection.map((r) => r.cashflowAvantImp);
       const cfApresArr = isRows.map((r) => r.cfApresIS);
@@ -1202,14 +1288,17 @@
     // Initialisation des inputs
     // -----------------------------
     function initInputs() {
+      // Inputs simples
       document
         .querySelectorAll("input[data-field]")
         .forEach((input) => {
           const field = input.dataset.field;
           const type = input.dataset.type;
           const value = hypotheses[field];
+
           if (type === "percent") {
-            input.value = (value * 100).toString().replace(".", ",");
+            input.value =
+              (value * 100).toString().replace(".", ",");
           } else {
             input.value = value;
           }
@@ -1224,7 +1313,7 @@
           };
         });
 
-      // Inputs des tranches
+      // Inputs des tranches de prêt travaux
       document
         .querySelectorAll("input[data-tranche]")
         .forEach((input) => {
@@ -1250,7 +1339,7 @@
     // -----------------------------
     // Scénarios (localStorage)
     // -----------------------------
-    const STORAGE_KEY = "aurea-scenarios-v2";
+    const STORAGE_KEY = "aurea-scenarios-v4-base";
 
     function loadScenarioList() {
       const select = document.getElementById("scenario-select");
@@ -1307,15 +1396,15 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       loadScenarioList();
     }
-
     // -----------------------------
-    // Démarrage
+    // Démarrage – équivalent du "Workbook_Open" dans Excel
     // -----------------------------
     window.addEventListener("DOMContentLoaded", () => {
-      initInputs();
-      loadScenarioList();
-      recompute();
+      initInputs();        // Remplit les champs avec les valeurs Excel Base
+      loadScenarioList();  // Charge la liste des scénarios sauvegardés
+      recompute();         // Calcul complet (CF, IS, TRI, tableau, courbe)
 
+      // Boutons scénarios
       document.getElementById("btn-save").onclick = saveScenario;
       document.getElementById("btn-load").onclick = loadSelectedScenario;
       document.getElementById("btn-delete").onclick = deleteSelectedScenario;
