@@ -670,437 +670,396 @@
     </div>
   </div>
 
- <script>
-  // -----------------------------
-  // Données initiales issues de ton Excel
-  // -----------------------------
-  const defaultHypotheses = {
-    prixAchat: 765000,
-    fraisNotairePct: 0.0668,
-    travauxInitiaux: 50000,
-    apport: 235000,
-    dureePret: 20,
-    tauxPret: 0.0309,
-    tauxAssurance: 0.0045,
+  <script>
+    // -----------------------------
+    // Données initiales (issues de ton Excel)
+    // -----------------------------
+    const defaultHypotheses = {
+      prixAchat: 765000,
+      fraisNotairePct: 0.0668,
+      travauxInitiaux: 50000,
+      apport: 235000,
+      dureePret: 20,
+      tauxPret: 0.0309,
+      tauxAssurance: 0.0045,
+      loyersAnnuel: 50280,
+      croissanceLoyers: 0.02,
+      vacance: 0.02,
+      fraisGestionPct: 0.01,
+      chargesNRAn1: 6802,
+      croissanceCharges: 0.025,
+      revaloBienPct: 0.02,
+      anneeDebutServices: 2,
+      revenusServicesAnDepart: 1500,
+      croissanceServices: 0.03,
+      capexAnnuel: 3000,
+      croissanceCapex: 0.0,
+      tauxISRedit: 0.15,
+      seuilISRedit: 42500,
+      tauxIS: 0.25,
+      dureeProjection: 20,
+      montantPretTravaux: 50000,
+      dureePretTravaux: 20,
+      tauxPretTravaux: 0.0309
+    };
 
-    loyersAnnuel: 50280,
-    croissanceLoyers: 0.02,
-    vacance: 0.02,
-    fraisGestionPct: 0.01,
+    let hypotheses = { ...defaultHypotheses };
 
-    chargesNRAn1: 6802,
-    croissanceCharges: 0.025,
+    // -----------------------------
+    // Utilitaires math
+    // -----------------------------
+    function annuite(capital, taux, duree) {
+      if (taux === 0) return capital / duree;
+      const r = taux;
+      return (capital * r) / (1 - Math.pow(1 + r, -duree));
+    }
 
-    revaloBienPct: 0.02,
-
-    anneeDebutServices: 2,
-    revenusServicesAnDepart: 1500,
-    croissanceServices: 0.03,
-
-    capexAnnuel: 3000,
-    croissanceCapex: 0.0,
-
-    tauxISRedit: 0.15,
-    seuilISRedit: 42500,
-    tauxIS: 0.25,
-
-    dureeProjection: 20,
-
-    // Prêt travaux : conditions identiques au prêt principal
-    dureePretTravaux: 20,
-    tauxPretTravaux: 0.0309
-  };
-
-  // Détail du prêt travaux – exactement Hypothèses!C42:C48 + années E42:E48
-  const travauxTranchesDefault = [
-    { montant: 6000, anDebut: 2 },   // Peinture
-    { montant: 20000, anDebut: 3 },  // Mobilier & literies
-    { montant: 9000, anDebut: 4 },   // Upgrade cuisine
-    { montant: 15000, anDebut: 6 }   // Huisseries
-  ];
-
-  let hypotheses = { ...defaultHypotheses };
-  let travauxTranches = [...travauxTranchesDefault];
-
-  // -----------------------------
-  // Utilitaires math
-  // -----------------------------
-  function annuite(capital, taux, duree) {
-    if (duree <= 0) return 0;
-    if (taux === 0) return capital / duree;
-    const r = taux;
-    return (capital * r) / (1 - Math.pow(1 + r, -duree));
-  }
-
-  function formatEuro(x) {
-    if (!isFinite(x)) return "–";
-    return (
-      (x < 0 ? "-" : "") +
-      Math.abs(x).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) +
-      " €"
-    );
-  }
-
-  function formatEuroSmall(x) {
-    if (!isFinite(x)) return "–";
-    return (
-      (x < 0 ? "-" : "") +
-      Math.abs(x).toLocaleString("fr-FR", { maximumFractionDigits: 0 })
-    );
-  }
-
-  function formatPercent(x) {
-    if (!isFinite(x)) return "–";
-    return (x * 100).toFixed(1).replace(".", ",") + " %";
-  }
-
-  function irr(cashflows) {
-    let low = -0.9;
-    let high = 1.5;
-
-    function f(rate) {
-      return cashflows.reduce(
-        (acc, cf, t) => acc + cf / Math.pow(1 + rate, t),
-        0
+    function formatEuro(x) {
+      if (!isFinite(x)) return "–";
+      return (
+        (x < 0 ? "-" : "") +
+        Math.abs(x).toLocaleString("fr-FR", {
+          maximumFractionDigits: 0
+        }) +
+        " €"
       );
     }
 
-    let fLow = f(low);
-    let fHigh = f(high);
-    if (fLow * fHigh > 0) return NaN;
-
-    for (let i = 0; i < 80; i++) {
-      const mid = (low + high) / 2;
-      const fMid = f(mid);
-      if (Math.abs(fMid) < 1e-7) return mid;
-      if (fLow * fMid < 0) {
-        high = mid;
-        fHigh = fMid;
-      } else {
-        low = mid;
-        fLow = fMid;
-      }
-    }
-    return (low + high) / 2;
-  }
-
-  // -----------------------------
-  // Projection annuelle = copie fidèle de l’onglet Projection_annuelle
-  // -----------------------------
-  function computeProjection(h) {
-    const fraisNotaire = h.prixAchat * h.fraisNotairePct;
-    const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
-    const montantPret = h.prixAchat + fraisNotaire - h.apport;
-
-    const annuitePret = annuite(montantPret, h.tauxPret, h.dureePret);
-
-    // annuité unité de prêt travaux (pour 1 € emprunté)
-    const pmtUnitTravaux = annuite(1, h.tauxPretTravaux, h.dureePretTravaux);
-
-    let crd = montantPret; // capital restant dû prêt principal
-    const projection = [];
-
-    for (let an = 1; an <= h.dureeProjection; an++) {
-      // Loyers bruts
-      const loyersBase =
-        h.loyersAnnuel * Math.pow(1 + h.croissanceLoyers, an - 1);
-
-      // Revenus services
-      let revenusServices = 0;
-      if (an >= h.anneeDebutServices) {
-        revenusServices =
-          h.revenusServicesAnDepart *
-          Math.pow(1 + h.croissanceServices, an - h.anneeDebutServices);
-      }
-
-      const revenusTotaux = loyersBase + revenusServices;
-      const vacance = revenusTotaux * h.vacance;
-      const loyersEncaisses = revenusTotaux - vacance;
-      const fraisGestion = loyersEncaisses * h.fraisGestionPct;
-
-      // Charges NR
-      const chargesNR =
-        h.chargesNRAn1 * Math.pow(1 + h.croissanceCharges, an - 1);
-
-      const resultatExploitation =
-        loyersEncaisses - fraisGestion - chargesNR;
-
-      // Capex : séquence “sur mesure” des premières années puis provision
-      let capex;
-      if (an <= 5) capex = 0;
-      else if (an === 6 || an === 7) capex = 500;
-      else if (an === 8) capex = 1500;
-      else if (an === 9) capex = 2000;
-      else
-        capex =
-          h.capexAnnuel * Math.pow(1 + h.croissanceCapex, an - 1);
-
-      // Prêt principal
-      const interets = crd * h.tauxPret;
-      const assurance = crd * h.tauxAssurance;
-      const amort = annuitePret - interets;
-
-      // Prêt travaux = somme des annuités de chaque tranche active
-      let annuiteTravaux = 0;
-      for (const tranche of travauxTranches) {
-        if (
-          an >= tranche.anDebut &&
-          an < tranche.anDebut + h.dureePretTravaux
-        ) {
-          annuiteTravaux += tranche.montant * pmtUnitTravaux;
-        }
-      }
-
-      const cashflowAvantImp =
-        resultatExploitation -
-        capex -
-        annuitePret -
-        assurance -
-        annuiteTravaux;
-
-      crd = Math.max(0, crd - amort);
-
-      const valeurBien =
-        coutTotal * Math.pow(1 + h.revaloBienPct, an);
-      const patrimoineNet = valeurBien - crd; // comme Excel : prêt travaux non déduit
-
-      projection.push({
-        an,
-        loyersEncaisses,
-        chargesNR,
-        capex,
-        annuitePret,
-        annuiteTravaux,
-        cashflowAvantImp,
-        crd,
-        valeurBien,
-        patrimoineNet,
-        resultatExploitation,
-        vacance,
-        fraisGestion,
-        revenusServices
-      });
+    function formatEuroSmall(x) {
+      if (!isFinite(x)) return "–";
+      return (
+        (x < 0 ? "-" : "") +
+        Math.abs(x).toLocaleString("fr-FR", {
+          maximumFractionDigits: 0
+        })
+      );
     }
 
-    return { coutTotal, montantPret, annuitePret, projection };
-  }
-
-  // -----------------------------
-  // Fiscalité IS = onglet Projection_IS
-  // -----------------------------
-  function computeIS(projection, h) {
-    const rows = [];
-    for (const row of projection) {
-      const benefImposable = Math.max(0, row.cashflowAvantImp);
-      const c = benefImposable;
-      const d =
-        c <= 0
-          ? 0
-          : Math.min(c, h.seuilISRedit) * h.tauxISRedit +
-            Math.max(c - h.seuilISRedit, 0) * h.tauxIS;
-      const cfApresIS = row.cashflowAvantImp - d;
-      rows.push({
-        an: row.an,
-        cfAvant: row.cashflowAvantImp,
-        benefImposable: c,
-        impot: d,
-        cfApresIS
-      });
+    function formatPercent(x) {
+      if (!isFinite(x)) return "–";
+      return (x * 100).toFixed(1).replace(".", ",") + " %";
     }
-    return rows;
-  }
 
-  // -----------------------------
-  // TRI = onglet TRI + Scénario vente
-  // -----------------------------
-  function computeTRI(h, projection, isRows, coutTotal) {
-    const n = projection.length;
-    const last = projection[n - 1];
+    // IRR par dichotomie
+    function irr(cashflows) {
+      // cashflows[0] = CF année 0
+      let low = -0.9;
+      let high = 1.5;
+      const f = (rate) =>
+        cashflows.reduce(
+          (acc, cf, t) => acc + cf / Math.pow(1 + rate, t),
+          0
+        );
 
-    // Scénario vente (onglet Scénario vente ou complément re)
-    const valeurRevente = last.valeurBien;
-    const capitalRestantDu = last.crd;
-    const plusValueBrute = valeurRevente - coutTotal;
-    const impotPlusValue =
-      plusValueBrute > 0 ? plusValueBrute * h.tauxIS : 0;
-    const cashNetSCI =
-      valeurRevente - capitalRestantDu - impotPlusValue;
+      let fLow = f(low);
+      let fHigh = f(high);
+      if (fLow * fHigh > 0) {
+        return NaN; // pas de changement de signe
+      }
 
-    // CF avant IS : -apport, CF avant impôt, + patrimoine net année 20
-    const cfAvant = [-h.apport];
-    projection.forEach((row) => cfAvant.push(row.cashflowAvantImp));
-    cfAvant[cfAvant.length - 1] += last.patrimoineNet;
-
-    // CF après IS : -apport, CF après IS, + cash net SCI (vente)
-    const cfApres = [-h.apport];
-    isRows.forEach((r) => cfApres.push(r.cfApresIS));
-    cfApres[cfApres.length - 1] += cashNetSCI;
-
-    const triAvant = irr(cfAvant);
-    const triApres = irr(cfApres);
-
-    return { triAvant, triApres, cashNetSCI };
-  }
-
-  // -----------------------------
-  // Recalcul complet
-  // -----------------------------
-  function recompute() {
-    const { coutTotal, projection } = computeProjection(hypotheses);
-    const isRows = computeIS(projection, hypotheses);
-    const { triAvant, triApres, cashNetSCI } = computeTRI(
-      hypotheses,
-      projection,
-      isRows,
-      coutTotal
-    );
-
-    // KPIs
-    const cf1 = projection[0]?.cashflowAvantImp ?? NaN;
-    const cfMoy =
-      projection.reduce((s, r) => s + r.cashflowAvantImp, 0) /
-      projection.length;
-    const patrimoineFinal =
-      projection[projection.length - 1]?.patrimoineNet ?? NaN;
-
-    document.getElementById("kpi-cf1").textContent = formatEuro(cf1);
-    document.getElementById("kpi-cf1-sub").textContent =
-      "avant IS – " + (cf1 >= 0 ? "positif" : "négatif");
-
-    document.getElementById("kpi-cf-moy").textContent =
-      formatEuro(cfMoy);
-    document.getElementById("kpi-cf-moy-sub").textContent =
-      "moyenne annuelle (avant IS)";
-
-    document.getElementById("kpi-patrimoine").textContent =
-      formatEuro(patrimoineFinal);
-    document.getElementById("kpi-patrimoine-sub").textContent =
-      "après revalorisation & remboursement du prêt";
-
-    document.getElementById("kpi-tri-avant").textContent =
-      isFinite(triAvant) ? formatPercent(triAvant) : "–";
-    document.getElementById("kpi-tri-apres").textContent =
-      "après IS : " +
-      (isFinite(triApres) ? formatPercent(triApres) : "–");
-
-    // Tableau annuel
-    const tbody = document.getElementById("projection-body");
-    tbody.innerHTML = "";
-    projection.forEach((row, idx) => {
-      const isRow = isRows[idx];
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${row.an}</td>
-        <td>${formatEuroSmall(row.loyersEncaisses)}</td>
-        <td>${formatEuroSmall(row.chargesNR + row.capex)}</td>
-        <td>${formatEuroSmall(row.annuitePret + row.annuiteTravaux)}</td>
-        <td>${formatEuroSmall(row.cashflowAvantImp)}</td>
-        <td>${formatEuroSmall(isRow.impot)}</td>
-        <td>${formatEuroSmall(isRow.cfApresIS)}</td>
-        <td>${formatEuroSmall(row.crd)}</td>
-        <td>${formatEuroSmall(row.valeurBien)}</td>
-        <td>${formatEuroSmall(row.patrimoineNet)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  // -----------------------------
-  // Inputs & scénarios
-  // -----------------------------
-  function initInputs() {
-    document
-      .querySelectorAll("input[data-field]")
-      .forEach((input) => {
-        const field = input.dataset.field;
-        const type = input.dataset.type;
-        const value = hypotheses[field];
-        if (type === "percent") {
-          input.value = (value * 100).toString().replace(".", ",");
+      for (let i = 0; i < 80; i++) {
+        const mid = (low + high) / 2;
+        const fMid = f(mid);
+        if (Math.abs(fMid) < 1e-6) return mid;
+        if (fLow * fMid < 0) {
+          high = mid;
+          fHigh = fMid;
         } else {
-          input.value = value;
+          low = mid;
+          fLow = fMid;
+        }
+      }
+      return (low + high) / 2;
+    }
+
+    // -----------------------------
+    // Calcul de la projection
+    // -----------------------------
+    function computeProjection(h) {
+      const results = [];
+      const fraisNotaire = h.prixAchat * h.fraisNotairePct;
+      const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
+      const montantPret = coutTotal - h.apport;
+
+      const annuitePret = annuite(montantPret, h.tauxPret, h.dureePret);
+
+      const annuitePretTravaux = annuite(
+        h.montantPretTravaux,
+        h.tauxPretTravaux,
+        h.dureePretTravaux
+      );
+
+      let crd = montantPret;
+      let crdTravaux = h.montantPretTravaux;
+
+      let loyers = h.loyersAnnuel;
+      let chargesNR = h.chargesNRAn1;
+      let capex = h.capexAnnuel;
+      let revenusServices = 0;
+
+      for (let an = 1; an <= h.dureeProjection; an++) {
+        if (an === 1) {
+          loyers = h.loyersAnnuel;
+          chargesNR = h.chargesNRAn1;
+          capex = h.capexAnnuel;
+        } else {
+          loyers = loyers * (1 + h.croissanceLoyers);
+          chargesNR = chargesNR * (1 + h.croissanceCharges);
+          capex = capex * (1 + h.croissanceCapex);
         }
 
-        input.addEventListener("input", () => {
-          const raw = input.value.replace(",", ".");
-          const num = parseFloat(raw);
-          let v = isNaN(num) ? 0 : num;
-          if (type === "percent") v = v / 100;
-          hypotheses[field] = v;
-          recompute();
+        if (an < h.anneeDebutServices) {
+          revenusServices = 0;
+        } else if (an === h.anneeDebutServices) {
+          revenusServices = h.revenusServicesAnDepart;
+        } else {
+          revenusServices = revenusServices * (1 + h.croissanceServices);
+        }
+
+        const totalRev = loyers + revenusServices;
+        const vacance = totalRev * h.vacance;
+        const loyersEncaisses = totalRev - vacance;
+        const fraisGestion = loyersEncaisses * h.fraisGestionPct;
+
+        const resultatExploitation =
+          loyersEncaisses - fraisGestion - chargesNR;
+
+        // prêt principal
+        const interets = crd * h.tauxPret;
+        const assurance = crd * h.tauxAssurance;
+        const amort = annuitePret - interets;
+
+        // prêt travaux simplifié : annuité constante à partir de l’année 2
+        let annuiteTrav = 0;
+        let interetsTrav = 0;
+        let amortTrav = 0;
+        if (an >= 2 && crdTravaux > 0) {
+          annuiteTrav = annuitePretTravaux;
+          interetsTrav = crdTravaux * h.tauxPretTravaux;
+          amortTrav = annuiteTrav - interetsTrav;
+        }
+
+        const cashflowAvantImp =
+          resultatExploitation - capex - annuitePret - assurance - annuiteTrav;
+
+        crd = Math.max(0, crd - amort);
+        if (an >= 2) {
+          crdTravaux = Math.max(0, crdTravaux - amortTrav);
+        }
+
+        const valeurBien =
+          coutTotal * Math.pow(1 + h.revaloBienPct, an);
+        const patrimoineNet = valeurBien - crd - crdTravaux;
+
+        results.push({
+          an,
+          loyersEncaisses,
+          chargesNR,
+          capex,
+          annuitePret,
+          annuiteTrav,
+          cashflowAvantImp,
+          interets,
+          assurance,
+          crd,
+          crdTravaux,
+          valeurBien,
+          patrimoineNet
         });
-      });
-  }
+      }
 
-  const STORAGE_KEY = "aurea-scenarios";
-
-  function loadScenarioList() {
-    const select = document.getElementById("scenario-select");
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    select.innerHTML = "";
-    const optPlaceholder = document.createElement("option");
-    optPlaceholder.value = "";
-    optPlaceholder.textContent = "Scénarios sauvegardés…";
-    select.appendChild(optPlaceholder);
-    Object.keys(data).forEach((name) => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
-    });
-  }
-
-  function saveScenario() {
-    const nameInput = document.getElementById("scenario-name");
-    const name = nameInput.value.trim();
-    if (!name) {
-      alert("Donne un nom à ton scénario 🙂");
-      return;
+      return { coutTotal, montantPret, annuitePret, annuitePretTravaux, projection: results };
     }
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    data[name] = hypotheses;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    loadScenarioList();
-  }
 
-  function loadSelectedScenario() {
-    const select = document.getElementById("scenario-select");
-    const name = select.value;
-    if (!name) return;
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    if (!data[name]) return;
-    hypotheses = { ...data[name] };
-    initInputs();
-    recompute();
-  }
+    function computeIS(projection, h) {
+      return projection.map((row) => {
+        const benefImposable = Math.max(0, row.cashflowAvantImp);
+        let impot = 0;
+        if (benefImposable <= h.seuilISRedit) {
+          impot = benefImposable * h.tauxISRedit;
+        } else {
+          impot =
+            h.seuilISRedit * h.tauxISRedit +
+            (benefImposable - h.seuilISRedit) * h.tauxIS;
+        }
+        const cfApresIS = row.cashflowAvantImp - impot;
+        return { an: row.an, benefImposable, impot, cfApresIS };
+      });
+    }
 
-  function deleteSelectedScenario() {
-    const select = document.getElementById("scenario-select");
-    const name = select.value;
-    if (!name) return;
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    if (!data[name]) return;
-    if (!confirm(`Supprimer le scénario "${name}" ?`)) return;
-    delete data[name];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    loadScenarioList();
-  }
+    function recompute() {
+      const { coutTotal, montantPret, annuitePret, projection } =
+        computeProjection(hypotheses);
+      const isRows = computeIS(projection, hypotheses);
 
-  window.addEventListener("DOMContentLoaded", () => {
-    initInputs();
-    loadScenarioList();
-    recompute();
+      // KPIs
+      const cf1 = projection[0]?.cashflowAvantImp ?? NaN;
+      const cfMoy =
+        projection.reduce((s, r) => s + r.cashflowAvantImp, 0) /
+        projection.length;
+      const patrimoineFinal =
+        projection[projection.length - 1]?.patrimoineNet ?? NaN;
 
-    document
-      .getElementById("btn-save")
-      .addEventListener("click", saveScenario);
-    document
-      .getElementById("btn-load")
-      .addEventListener("click", loadSelectedScenario);
-    document
-      .getElementById("btn-delete")
-      .addEventListener("click", deleteSelectedScenario);
-  });
-</script>
+      const cashflowsAvant = [-hypotheses.apport];
+      const cashflowsApres = [-hypotheses.apport];
+      projection.forEach((row, idx) => {
+        const isRow = isRows[idx];
+        cashflowsAvant.push(row.cashflowAvantImp);
+        cashflowsApres.push(isRow.cfApresIS);
+      });
+
+      const lastIdx = cashflowsAvant.length - 1;
+      const patrimoineLast =
+        projection[projection.length - 1]?.patrimoineNet ?? 0;
+      cashflowsAvant[lastIdx] += patrimoineLast;
+      cashflowsApres[lastIdx] += patrimoineLast;
+
+      const triAvant = irr(cashflowsAvant);
+      const triApres = irr(cashflowsApres);
+
+      document.getElementById("kpi-cf1").textContent = formatEuro(cf1);
+      document.getElementById("kpi-cf1-sub").textContent =
+        "avant IS – " + (cf1 >= 0 ? "positif" : "négatif");
+
+      document.getElementById("kpi-cf-moy").textContent = formatEuro(cfMoy);
+      document.getElementById("kpi-cf-moy-sub").textContent =
+        "moyenne annuelle (avant IS)";
+
+      document.getElementById("kpi-patrimoine").textContent =
+        formatEuro(patrimoineFinal);
+      document.getElementById("kpi-patrimoine-sub").textContent =
+        "après revalorisation & remboursement du prêt";
+
+      document.getElementById("kpi-tri-avant").textContent =
+        isFinite(triAvant) ? formatPercent(triAvant) : "–";
+      document.getElementById("kpi-tri-apres").textContent =
+        "après IS : " +
+        (isFinite(triApres) ? formatPercent(triApres) : "–");
+
+      // Tableau
+      const tbody = document.getElementById("projection-body");
+      tbody.innerHTML = "";
+      projection.forEach((row, idx) => {
+        const isRow = isRows[idx];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.an}</td>
+          <td>${formatEuroSmall(row.loyersEncaisses)}</td>
+          <td>${formatEuroSmall(row.chargesNR + row.capex)}</td>
+          <td>${formatEuroSmall(row.annuitePret + row.annuiteTrav)}</td>
+          <td>${formatEuroSmall(row.cashflowAvantImp)}</td>
+          <td>${formatEuroSmall(isRow.impot)}</td>
+          <td>${formatEuroSmall(isRow.cfApresIS)}</td>
+          <td>${formatEuroSmall(row.crd + row.crdTravaux)}</td>
+          <td>${formatEuroSmall(row.valeurBien)}</td>
+          <td>${formatEuroSmall(row.patrimoineNet)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // -----------------------------
+    // Initialisation des inputs
+    // -----------------------------
+    function initInputs() {
+      document
+        .querySelectorAll("input[data-field]")
+        .forEach((input) => {
+          const field = input.dataset.field;
+          const type = input.dataset.type;
+          const value = hypotheses[field];
+          if (type === "percent") {
+            input.value = (value * 100).toString().replace(".", ",");
+          } else {
+            input.value = value;
+          }
+
+          input.addEventListener("input", () => {
+            const raw = input.value.replace(",", ".");
+            const num = parseFloat(raw);
+            let v = isNaN(num) ? 0 : num;
+            if (type === "percent") v = v / 100;
+            hypotheses[field] = v;
+            recompute();
+          });
+        });
+    }
+
+    // -----------------------------
+    // Gestion des scénarios (localStorage)
+    // -----------------------------
+    const STORAGE_KEY = "aurea-scenarios";
+
+    function loadScenarioList() {
+      const select = document.getElementById("scenario-select");
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      select.innerHTML = "";
+      const optPlaceholder = document.createElement("option");
+      optPlaceholder.value = "";
+      optPlaceholder.textContent = "Scénarios sauvegardés…";
+      select.appendChild(optPlaceholder);
+      Object.keys(data).forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+    }
+
+    function saveScenario() {
+      const nameInput = document.getElementById("scenario-name");
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert("Donne un nom à ton scénario 🙂");
+        return;
+      }
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      data[name] = hypotheses;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadScenarioList();
+    }
+
+    function loadSelectedScenario() {
+      const select = document.getElementById("scenario-select");
+      const name = select.value;
+      if (!name) return;
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!data[name]) return;
+      hypotheses = { ...data[name] };
+      initInputs();
+      recompute();
+    }
+
+    function deleteSelectedScenario() {
+      const select = document.getElementById("scenario-select");
+      const name = select.value;
+      if (!name) return;
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!data[name]) return;
+      if (!confirm(`Supprimer le scénario "${name}" ?`)) return;
+      delete data[name];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadScenarioList();
+    }
+
+    // -----------------------------
+    // Démarrage
+    // -----------------------------
+    window.addEventListener("DOMContentLoaded", () => {
+      initInputs();
+      loadScenarioList();
+      recompute();
+
+      document
+        .getElementById("btn-save")
+        .addEventListener("click", saveScenario);
+      document
+        .getElementById("btn-load")
+        .addEventListener("click", loadSelectedScenario);
+      document
+        .getElementById("btn-delete")
+        .addEventListener("click", deleteSelectedScenario);
+    });
+  </script>
 </body>
 </html>
