@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>Aurea Saint-Maurice – Simulateur Immo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js pour la courbe -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --aurea-bg: #fff8e8;
@@ -18,9 +20,7 @@
       --radius-large: 24px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -106,16 +106,11 @@
         flex-direction: row;
         align-items: flex-start;
       }
-      .col-left {
-        width: 45%;
-      }
-      .col-right {
-        width: 55%;
-      }
+      .col-left { width: 45%; }
+      .col-right { width: 55%; }
     }
 
-    .col-left,
-    .col-right {
+    .col-left, .col-right {
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -182,6 +177,7 @@
       display: flex;
       gap: 6px;
       align-items: center;
+      flex-wrap: nowrap;
     }
 
     .field label {
@@ -203,6 +199,7 @@
       outline: none;
       background: #faf7ee;
       transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s;
+      min-width: 0;
     }
 
     .field input:focus {
@@ -215,6 +212,12 @@
       font-size: 11px;
       color: var(--aurea-muted);
       padding: 0 4px;
+      white-space: nowrap;
+    }
+
+    .small-input {
+      max-width: 70px;
+      text-align: center;
     }
 
     .summary-grid {
@@ -224,9 +227,7 @@
     }
 
     @media (min-width: 600px) {
-      .summary-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
+      .summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
 
     .kpi-card {
@@ -234,6 +235,21 @@
       border-radius: 16px;
       background: linear-gradient(135deg, #fdf7e7, #faf3dc);
       border: 1px solid rgba(226, 185, 80, 0.25);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* Variantes de performance */
+    .kpi-positive {
+      background: linear-gradient(135deg, #ecfdf3, #dcfce7);
+      border-color: rgba(34, 197, 94, 0.55);
+    }
+    .kpi-neutral {
+      background: linear-gradient(135deg, #fefce8, #fef3c7);
+      border-color: rgba(234, 179, 8, 0.55);
+    }
+    .kpi-negative {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-color: rgba(239, 68, 68, 0.55);
     }
 
     .kpi-label {
@@ -333,22 +349,16 @@
       font-size: 11px;
     }
 
-    thead {
-      background: rgba(107, 117, 76, 0.08);
-    }
+    thead { background: rgba(107, 117, 76, 0.08); }
 
-    th,
-    td {
+    th, td {
       padding: 6px 8px;
       text-align: right;
       border-bottom: 1px solid #efe5d3;
       white-space: nowrap;
     }
 
-    th:first-child,
-    td:first-child {
-      text-align: left;
-    }
+    th:first-child, td:first-child { text-align: left; }
 
     th {
       font-weight: 600;
@@ -447,6 +457,53 @@
               <small>Appliqué au capital restant dû.</small>
             </div>
           </div>
+        </div>
+
+        <!-- PRET TRAVAUX EDITABLE -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Prêt travaux</div>
+              <div class="card-subtitle">Tranches à répartir sur 20 ans</div>
+            </div>
+          </div>
+          <div class="inputs-grid">
+            <div class="field">
+              <label>Tranche 1</label>
+              <div class="field-row">
+                <input type="number" data-tranche="0" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="0" data-tranche-field="debut" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Tranche 2</label>
+              <div class="field-row">
+                <input type="number" data-tranche="1" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="1" data-tranche-field="debut" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Tranche 3</label>
+              <div class="field-row">
+                <input type="number" data-tranche="2" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="2" data-tranche-field="debut" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Tranche 4</label>
+              <div class="field-row">
+                <input type="number" data-tranche="3" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="3" data-tranche-field="debut" />
+              </div>
+            </div>
+          </div>
+          <p class="hint">
+            Chaque tranche est amortie sur 20 ans à partir de l’année indiquée, avec le même taux que le prêt travaux.
+          </p>
         </div>
 
         <div class="card">
@@ -588,7 +645,7 @@
         </div>
       </div>
 
-      <!-- COLONNE DROITE : SYNTHÈSE + TABLEAU + SCÉNARIOS -->
+      <!-- COLONNE DROITE : SYNTHÈSE + COURBE + TABLEAU + SCÉNARIOS -->
       <div class="col-right">
         <div class="card">
           <div class="card-header">
@@ -598,22 +655,22 @@
             </div>
           </div>
           <div class="summary-grid">
-            <div class="kpi-card">
+            <div class="kpi-card" id="kpi-card-cf1">
               <div class="kpi-label">Cash-flow année 1</div>
               <div class="kpi-value" id="kpi-cf1">–</div>
               <div class="kpi-sub" id="kpi-cf1-sub">avant IS</div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" id="kpi-card-cf-moy">
               <div class="kpi-label">Cash-flow moyen</div>
               <div class="kpi-value" id="kpi-cf-moy">–</div>
               <div class="kpi-sub" id="kpi-cf-moy-sub">sur la période</div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" id="kpi-card-patrimoine">
               <div class="kpi-label">Patrimoine net final</div>
               <div class="kpi-value" id="kpi-patrimoine">–</div>
               <div class="kpi-sub" id="kpi-patrimoine-sub">valeur – dettes</div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" id="kpi-card-tri">
               <div class="kpi-label">TRI projet</div>
               <div class="kpi-value" id="kpi-tri-avant">–</div>
               <div class="kpi-sub" id="kpi-tri-apres">après IS : –</div>
@@ -644,6 +701,15 @@
             </div>
           </div>
 
+          <!-- COURBE -->
+          <div style="height: 220px; margin-bottom: 10px;">
+            <canvas id="cfChart"></canvas>
+          </div>
+          <p class="hint">
+            Courbe du cash-flow avant et après IS. Touchez les points sur mobile pour voir le détail.
+          </p>
+
+          <!-- TABLEAU -->
           <div class="table-wrapper">
             <table>
               <thead>
@@ -672,7 +738,7 @@
 
   <script>
     // -----------------------------
-    // Données initiales (issues de ton Excel)
+    // Données initiales
     // -----------------------------
     const defaultHypotheses = {
       prixAchat: 765000,
@@ -682,6 +748,7 @@
       dureePret: 20,
       tauxPret: 0.0309,
       tauxAssurance: 0.0045,
+
       loyersAnnuel: 50280,
       croissanceLoyers: 0.02,
       vacance: 0.02,
@@ -689,21 +756,35 @@
       chargesNRAn1: 6802,
       croissanceCharges: 0.025,
       revaloBienPct: 0.02,
+
       anneeDebutServices: 2,
       revenusServicesAnDepart: 1500,
       croissanceServices: 0.03,
+
       capexAnnuel: 3000,
       croissanceCapex: 0.0,
+
       tauxISRedit: 0.15,
       seuilISRedit: 42500,
       tauxIS: 0.25,
       dureeProjection: 20,
+
       montantPretTravaux: 50000,
       dureePretTravaux: 20,
       tauxPretTravaux: 0.0309
     };
 
+    // Tranches du prêt travaux (comme ton Excel)
+    const defaultTranches = [
+      { montant: 6000, debut: 2 },
+      { montant: 20000, debut: 3 },
+      { montant: 9000, debut: 4 },
+      { montant: 15000, debut: 6 }
+    ];
+
     let hypotheses = { ...defaultHypotheses };
+    let trancheConfig = defaultTranches.map(t => ({ ...t }));
+    let cfChart = null;
 
     // -----------------------------
     // Utilitaires math
@@ -742,7 +823,6 @@
 
     // IRR par dichotomie
     function irr(cashflows) {
-      // cashflows[0] = CF année 0
       let low = -0.9;
       let high = 1.5;
       const f = (rate) =>
@@ -754,7 +834,7 @@
       let fLow = f(low);
       let fHigh = f(high);
       if (fLow * fHigh > 0) {
-        return NaN; // pas de changement de signe
+        return NaN;
       }
 
       for (let i = 0; i < 80; i++) {
@@ -773,24 +853,72 @@
     }
 
     // -----------------------------
-    // Calcul de la projection
+    // Prêt travaux – tranches éditables
     // -----------------------------
-    function computeProjection(h) {
+    function computePretTravauxSchedule(h, tranchesSource) {
+      const nYears = h.dureeProjection;
+      const rate = h.tauxPretTravaux;
+      const nper = h.dureePretTravaux;
+
+      const tranches = tranchesSource
+        .filter(t => t.montant && t.debut)
+        .map((t) => ({
+          montant: t.montant,
+          debut: t.debut,
+          restant: t.montant
+        }));
+
+      const rows = [];
+
+      for (let year = 1; year <= nYears; year++) {
+        let annuiteTot = 0;
+        let interetsTot = 0;
+        let amortTot = 0;
+        let crdTot = 0;
+
+        tranches.forEach((tr) => {
+          if (
+            year >= tr.debut &&
+            year < tr.debut + nper &&
+            tr.restant > 1e-6
+          ) {
+            const a = annuite(tr.montant, rate, nper);
+            const interets = tr.restant * rate;
+            let amort = a - interets;
+            if (amort > tr.restant) amort = tr.restant;
+            tr.restant -= amort;
+
+            annuiteTot += a;
+            interetsTot += interets;
+            amortTot += amort;
+          }
+          crdTot += tr.restant;
+        });
+
+        rows.push({
+          annuite: annuiteTot,
+          interets: interetsTot,
+          amort: amortTot,
+          crd: crdTot
+        });
+      }
+
+      return rows;
+    }
+
+    // -----------------------------
+    // Projection globale
+    // -----------------------------
+    function computeProjection(h, tranches) {
       const results = [];
       const fraisNotaire = h.prixAchat * h.fraisNotairePct;
       const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
       const montantPret = coutTotal - h.apport;
 
       const annuitePret = annuite(montantPret, h.tauxPret, h.dureePret);
-
-      const annuitePretTravaux = annuite(
-        h.montantPretTravaux,
-        h.tauxPretTravaux,
-        h.dureePretTravaux
-      );
+      const pretTravSchedule = computePretTravauxSchedule(h, tranches);
 
       let crd = montantPret;
-      let crdTravaux = h.montantPretTravaux;
 
       let loyers = h.loyersAnnuel;
       let chargesNR = h.chargesNRAn1;
@@ -824,28 +952,28 @@
         const resultatExploitation =
           loyersEncaisses - fraisGestion - chargesNR;
 
-        // prêt principal
         const interets = crd * h.tauxPret;
         const assurance = crd * h.tauxAssurance;
         const amort = annuitePret - interets;
 
-        // prêt travaux simplifié : annuité constante à partir de l’année 2
-        let annuiteTrav = 0;
-        let interetsTrav = 0;
-        let amortTrav = 0;
-        if (an >= 2 && crdTravaux > 0) {
-          annuiteTrav = annuitePretTravaux;
-          interetsTrav = crdTravaux * h.tauxPretTravaux;
-          amortTrav = annuiteTrav - interetsTrav;
-        }
+        const pretTravAn = pretTravSchedule[an - 1] || {
+          annuite: 0,
+          interets: 0,
+          amort: 0,
+          crd: 0
+        };
+
+        const annuiteTrav = pretTravAn.annuite;
+        const crdTravaux = pretTravAn.crd;
 
         const cashflowAvantImp =
-          resultatExploitation - capex - annuitePret - assurance - annuiteTrav;
+          resultatExploitation -
+          capex -
+          annuitePret -
+          assurance -
+          annuiteTrav;
 
         crd = Math.max(0, crd - amort);
-        if (an >= 2) {
-          crdTravaux = Math.max(0, crdTravaux - amortTrav);
-        }
 
         const valeurBien =
           coutTotal * Math.pow(1 + h.revaloBienPct, an);
@@ -859,8 +987,6 @@
           annuitePret,
           annuiteTrav,
           cashflowAvantImp,
-          interets,
-          assurance,
           crd,
           crdTravaux,
           valeurBien,
@@ -868,7 +994,12 @@
         });
       }
 
-      return { coutTotal, montantPret, annuitePret, annuitePretTravaux, projection: results };
+      return {
+        coutTotal,
+        montantPret,
+        annuitePret,
+        projection: results
+      };
     }
 
     function computeIS(projection, h) {
@@ -887,16 +1018,95 @@
       });
     }
 
+    // -----------------------------
+    // Courbe Chart.js
+    // -----------------------------
+    function updateChart(years, cfAvant, cfApres) {
+      const ctx = document.getElementById("cfChart").getContext("2d");
+
+      if (!cfChart) {
+        cfChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: years,
+            datasets: [
+              {
+                label: "CF avant IS",
+                data: cfAvant,
+                borderColor: "#6b754c",
+                backgroundColor: "rgba(107,117,76,0.15)",
+                fill: false,
+                tension: 0.3
+              },
+              {
+                label: "CF après IS",
+                data: cfApres,
+                borderColor: "#e2b950",
+                backgroundColor: "rgba(226,185,80,0.18)",
+                fill: true,
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                labels: { font: { size: 11 } }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { font: { size: 10 } },
+                grid: { display: false }
+              },
+              y: {
+                ticks: {
+                  font: { size: 10 },
+                  callback: (value) =>
+                    value.toLocaleString("fr-FR", {
+                      maximumFractionDigits: 0
+                    }) + " €"
+                },
+                grid: { color: "rgba(148,163,184,0.2)" }
+              }
+            }
+          }
+        });
+      } else {
+        cfChart.data.labels = years;
+        cfChart.data.datasets[0].data = cfAvant;
+        cfChart.data.datasets[1].data = cfApres;
+        cfChart.update();
+      }
+    }
+
+    // -----------------------------
+    // Couleurs de performance des KPI
+    // -----------------------------
+    function setKpiState(cardId, state) {
+      const el = document.getElementById(cardId);
+      if (!el) return;
+      el.classList.remove("kpi-positive", "kpi-neutral", "kpi-negative");
+      if (state === "positive") el.classList.add("kpi-positive");
+      else if (state === "neutral") el.classList.add("kpi-neutral");
+      else if (state === "negative") el.classList.add("kpi-negative");
+    }
+
+    // -----------------------------
+    // Recalcul global
+    // -----------------------------
     function recompute() {
-      const { coutTotal, montantPret, annuitePret, projection } =
-        computeProjection(hypotheses);
+      const { projection } = computeProjection(hypotheses, trancheConfig);
       const isRows = computeIS(projection, hypotheses);
 
       // KPIs
       const cf1 = projection[0]?.cashflowAvantImp ?? NaN;
       const cfMoy =
         projection.reduce((s, r) => s + r.cashflowAvantImp, 0) /
-        projection.length;
+        (projection.length || 1);
       const patrimoineFinal =
         projection[projection.length - 1]?.patrimoineNet ?? NaN;
 
@@ -917,6 +1127,7 @@
       const triAvant = irr(cashflowsAvant);
       const triApres = irr(cashflowsApres);
 
+      // Affichage valeurs
       document.getElementById("kpi-cf1").textContent = formatEuro(cf1);
       document.getElementById("kpi-cf1-sub").textContent =
         "avant IS – " + (cf1 >= 0 ? "positif" : "négatif");
@@ -935,6 +1146,29 @@
       document.getElementById("kpi-tri-apres").textContent =
         "après IS : " +
         (isFinite(triApres) ? formatPercent(triApres) : "–");
+
+      // Couleurs des KPI (logique simple, à ajuster si tu veux coller au centime à l’Excel)
+      // CF année 1
+      if (cf1 > 0) setKpiState("kpi-card-cf1", "positive");
+      else if (cf1 > -2000) setKpiState("kpi-card-cf1", "neutral");
+      else setKpiState("kpi-card-cf1", "negative");
+
+      // CF moyen
+      if (cfMoy > 0) setKpiState("kpi-card-cf-moy", "positive");
+      else if (cfMoy > -2000) setKpiState("kpi-card-cf-moy", "neutral");
+      else setKpiState("kpi-card-cf-moy", "negative");
+
+      // Patrimoine final (comparé à l'apport)
+      if (patrimoineFinal >= hypotheses.apport * 2)
+        setKpiState("kpi-card-patrimoine", "positive");
+      else if (patrimoineFinal >= hypotheses.apport)
+        setKpiState("kpi-card-patrimoine", "neutral");
+      else setKpiState("kpi-card-patrimoine", "negative");
+
+      // TRI après IS
+      if (triApres >= 0.06) setKpiState("kpi-card-tri", "positive");
+      else if (triApres >= 0.03) setKpiState("kpi-card-tri", "neutral");
+      else setKpiState("kpi-card-tri", "negative");
 
       // Tableau
       const tbody = document.getElementById("projection-body");
@@ -956,6 +1190,12 @@
         `;
         tbody.appendChild(tr);
       });
+
+      // Courbe
+      const years = projection.map((r) => r.an);
+      const cfAvantArr = projection.map((r) => r.cashflowAvantImp);
+      const cfApresArr = isRows.map((r) => r.cfApresIS);
+      updateChart(years, cfAvantArr, cfApresArr);
     }
 
     // -----------------------------
@@ -974,21 +1214,43 @@
             input.value = value;
           }
 
-          input.addEventListener("input", () => {
+          input.oninput = () => {
             const raw = input.value.replace(",", ".");
             const num = parseFloat(raw);
             let v = isNaN(num) ? 0 : num;
             if (type === "percent") v = v / 100;
             hypotheses[field] = v;
             recompute();
-          });
+          };
+        });
+
+      // Inputs des tranches
+      document
+        .querySelectorAll("input[data-tranche]")
+        .forEach((input) => {
+          const index = parseInt(input.dataset.tranche, 10);
+          const field = input.dataset.trancheField;
+          const current = trancheConfig[index] || { montant: 0, debut: 0 };
+
+          input.value = current[field] ?? "";
+
+          input.oninput = () => {
+            const raw = input.value.replace(",", ".");
+            const num = parseFloat(raw);
+            const v = isNaN(num) ? 0 : num;
+            trancheConfig[index] = {
+              ...trancheConfig[index],
+              [field]: v
+            };
+            recompute();
+          };
         });
     }
 
     // -----------------------------
-    // Gestion des scénarios (localStorage)
+    // Scénarios (localStorage)
     // -----------------------------
-    const STORAGE_KEY = "aurea-scenarios";
+    const STORAGE_KEY = "aurea-scenarios-v2";
 
     function loadScenarioList() {
       const select = document.getElementById("scenario-select");
@@ -1014,7 +1276,10 @@
         return;
       }
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      data[name] = hypotheses;
+      data[name] = {
+        hypotheses,
+        tranches: trancheConfig
+      };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       loadScenarioList();
     }
@@ -1025,7 +1290,8 @@
       if (!name) return;
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
       if (!data[name]) return;
-      hypotheses = { ...data[name] };
+      hypotheses = { ...data[name].hypotheses };
+      trancheConfig = (data[name].tranches || defaultTranches).map(t => ({ ...t }));
       initInputs();
       recompute();
     }
@@ -1050,15 +1316,9 @@
       loadScenarioList();
       recompute();
 
-      document
-        .getElementById("btn-save")
-        .addEventListener("click", saveScenario);
-      document
-        .getElementById("btn-load")
-        .addEventListener("click", loadSelectedScenario);
-      document
-        .getElementById("btn-delete")
-        .addEventListener("click", deleteSelectedScenario);
+      document.getElementById("btn-save").onclick = saveScenario;
+      document.getElementById("btn-load").onclick = loadSelectedScenario;
+      document.getElementById("btn-delete").onclick = deleteSelectedScenario;
     });
   </script>
 </body>
