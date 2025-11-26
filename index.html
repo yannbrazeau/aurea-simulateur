@@ -524,7 +524,7 @@
             </div>
           </div>
           <p class="hint">
-            Par défaut : 6 k€ en année 2, 20 k€ en année 3, 9 k€ en année 4, 15 k€ en année 6 (total 50 k€).
+            Par défaut : 8 k€ + 6 k€ en année 2, 20 k€ + 4 k€ en année 3, 8 k€ en année 4, 9 k€ en année 5, 15 k€ en année 10 (total 70 k€).
           </p>
         </div>
 
@@ -760,7 +760,7 @@
     </div>
   </div>
 
-  <!-- Le JS arrive dans les blocs 2 et 3 -->
+  <!-- JS -->
   <script>
     // -----------------------------
     // Hypothèses "Base" issues de l'Excel
@@ -778,7 +778,7 @@
       croissanceLoyers: 0.02,     // +2 % / an
       vacance: 0.02,              // 2 % de vacance
       fraisGestionPct: 0.01,      // 1 % des loyers encaissés
-      chargesNRAn1: 6802,         // Charges non récupérables année 1
+      chargesNRAn1: 6902,         // 🔁 corrigé pour coller à l'Excel Base
       croissanceCharges: 0.025,   // +2,5 % / an
       revaloBienPct: 0.02,        // +2 % / an
 
@@ -794,17 +794,20 @@
       tauxIS: 0.25,               // 25 %
       dureeProjection: 20,        // 20 ans de projection
 
-      montantPretTravaux: 50000,  // Total prêt travaux
+      montantPretTravaux: 70000,  // 🔁 Total prêt travaux Base Excel
       dureePretTravaux: 20,       // Durée prêt travaux
       tauxPretTravaux: 0.0309     // Même taux que le prêt principal
     };
 
-    // Tranches du prêt travaux (4 tranches comme dans ton fichier base)
+    // Tranches du prêt travaux (7 tranches comme dans Excel Base)
     const defaultTranches = [
-      { montant: 6000, debut: 2 },   // 6 k€ année 2
-      { montant: 20000, debut: 3 },  // 20 k€ année 3
-      { montant: 9000, debut: 4 },   // 9 k€ année 4
-      { montant: 15000, debut: 6 }   // 15 k€ année 6
+      { montant: 8000,  debut: 2 },  // VMC
+      { montant: 6000,  debut: 2 },  // Peinture
+      { montant: 20000, debut: 3 },  // Mobilier & literies
+      { montant: 4000,  debut: 3 },  // SDB / finitions
+      { montant: 8000,  debut: 4 },  // Finitions & déco
+      { montant: 9000,  debut: 5 },  // Upgrade cuisine
+      { montant: 15000, debut: 10 }  // Huisseries
     ];
 
     let hypotheses = { ...defaultHypotheses };
@@ -890,7 +893,6 @@
       const rate = h.tauxPretTravaux;
       const nper = h.dureePretTravaux;
 
-      // normalisation des tranches : on ne garde que celles qui ont montant & début
       const tranches = tranchesSource
         .filter(t => t.montant && t.debut)
         .map((t) => ({
@@ -941,18 +943,17 @@
     // Capex année par année – calé sur ton Excel
     // -----------------------------
     function capexForYear(year, h) {
-      // D'après l'onglet Projection_annuelle de ton fichier :
       // Années 1 à 5 : 0
       // Années 6 à 7 : 500
       // Année 8       : 1500
       // Année 9       : 2000
-      // Année >= 10   : capexAnnuel * (1 + croissanceCapex)^(année - 10)
+      // Année >= 10   : capexAnnuel * (1 + croissanceCapex)^(année - 1)
       if (year <= 5) return 0;
       if (year === 6 || year === 7) return 500;
       if (year === 8) return 1500;
       if (year === 9) return 2000;
 
-      const n = year - 10; // 0 pour l'année 10
+      const n = year - 1;
       return h.capexAnnuel * Math.pow(1 + h.croissanceCapex, n);
     }
 
@@ -962,18 +963,16 @@
     function computeProjection(h, tranches) {
       const results = [];
 
-      // Coût d'acquisition + travaux initiaux (financés via prêt principal)
       const fraisNotaire = h.prixAchat * h.fraisNotairePct;
       const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
 
-      // Hypothèse : le prêt principal finance le coût total - apport
-      const montantPretPrincipal = coutTotal - h.apport;
+      // 🔁 Prêt principal = prix + notaire – apport (sans travaux)
+      const montantPretPrincipal = h.prixAchat + fraisNotaire - h.apport;
       const annuitePret = annuite(montantPretPrincipal, h.tauxPret, h.dureePret);
 
-      // Prêt travaux = tranches (6k, 20k, 9k, 15k = 50 k€)
       const pretTravSchedule = computePretTravauxSchedule(h, tranches);
 
-      // On conserve les montants pour les KPIs
+      // Pour les KPIs
       lastMontantPretPrincipal = montantPretPrincipal;
       lastSommeEmprunteeTotale = montantPretPrincipal + h.montantPretTravaux;
 
@@ -1007,7 +1006,6 @@
         const loyersEncaisses = totalRev - vacance;
         const fraisGestion = loyersEncaisses * h.fraisGestionPct;
 
-        // Résultat d'exploitation (avant capex)
         const resultatExploitation =
           loyersEncaisses - fraisGestion - chargesNR;
 
@@ -1026,10 +1024,10 @@
         const annuiteTrav = pretTravAn.annuite;
         const crdTravaux = pretTravAn.crd;
 
-        // Capex (provision gros travaux) selon la rampe Excel
+        // Capex (provision gros travaux)
         const capex = capexForYear(an, h);
 
-        // Cash-flow avant IS (logique Excel)
+        // Cash-flow avant IS
         const cashflowAvantImp =
           resultatExploitation -
           capex -
@@ -1044,8 +1042,8 @@
         const valeurBien =
           coutTotal * Math.pow(1 + h.revaloBienPct, an);
 
-        // Patrimoine net : valeur bien - dettes (prêt principal + travaux)
-        const patrimoineNet = valeurBien - crd - crdTravaux;
+        // 🔁 Patrimoine net : valeur bien – CRD du prêt principal
+        const patrimoineNet = valeurBien - crd;
 
         results.push({
           an,
@@ -1073,7 +1071,7 @@
     }
 
     // -----------------------------
-    // IS et CF après IS – même logique que l'Excel
+    // IS et CF après IS – même logique que l'Excel (hors plus-value finale)
     // -----------------------------
     function computeIS(projection, h) {
       return projection.map((row) => {
@@ -1157,7 +1155,7 @@
     }
 
     // -----------------------------
-    // Couleurs de performance des KPI (logique proche de ton Excel)
+    // Couleurs de performance des KPI
     // -----------------------------
     function setKpiState(cardId, state) {
       const el = document.getElementById(cardId);
@@ -1169,10 +1167,11 @@
     }
 
     // -----------------------------
-    // Recalcul global (comme si on appuyait sur F9 dans Excel)
+    // Recalcul global (F9)
     // -----------------------------
     function recompute() {
-      const { projection } = computeProjection(hypotheses, trancheConfig);
+      const { coutTotal, montantPretPrincipal, annuitePret, projection } =
+        computeProjection(hypotheses, trancheConfig);
       const isRows = computeIS(projection, hypotheses);
 
       if (projection.length === 0) return;
@@ -1185,21 +1184,40 @@
       const patrimoineFinal =
         projection[projection.length - 1].patrimoineNet;
 
-      // Cashflows pour TRI (avant et après IS)
+      // CF liste pour TRI
+      const cfAvantList = projection.map((r) => r.cashflowAvantImp);
+      const cfApresList = isRows.map((r) => r.cfApresIS);
+
+      const valeurFinale =
+        projection[projection.length - 1].valeurBien;
+      const crdFinal =
+        projection[projection.length - 1].crd;
+
+      // Plus-value brute & IS sur plus-value
+      const plusValueBrute = valeurFinale - coutTotal;
+      const impotPlusValue =
+        plusValueBrute > 0 ? plusValueBrute * hypotheses.tauxIS : 0;
+
+      // Cash net dans la SCI après vente et IS
+      const saleNetApresIS = valeurFinale - crdFinal - impotPlusValue;
+
+      // TRI avant IS : CF avant IS + patrimoine net en année finale
       const cashflowsAvant = [-hypotheses.apport];
+      for (let i = 0; i < cfAvantList.length - 1; i++) {
+        cashflowsAvant.push(cfAvantList[i]);
+      }
+      cashflowsAvant.push(
+        cfAvantList[cfAvantList.length - 1] + patrimoineFinal
+      );
+
+      // TRI après IS : CF après IS + cash net après vente & IS
       const cashflowsApres = [-hypotheses.apport];
-
-      projection.forEach((row, idx) => {
-        const isRow = isRows[idx];
-        cashflowsAvant.push(row.cashflowAvantImp);
-        cashflowsApres.push(isRow.cfApresIS);
-      });
-
-      const lastIdx = cashflowsAvant.length - 1;
-      const patrimoineLast =
-        projection[projection.length - 1].patrimoineNet;
-      cashflowsAvant[lastIdx] += patrimoineLast;
-      cashflowsApres[lastIdx] += patrimoineLast;
+      for (let i = 0; i < cfApresList.length - 1; i++) {
+        cashflowsApres.push(cfApresList[i]);
+      }
+      cashflowsApres.push(
+        cfApresList[cfApresList.length - 1] + saleNetApresIS
+      );
 
       const triAvant = irr(cashflowsAvant);
       const triApres = irr(cashflowsApres);
@@ -1233,25 +1251,21 @@
         " · Travaux : " +
         formatEuro(hypotheses.montantPretTravaux);
 
-      // Couleurs KPI – seuils simples (à ajuster si tu veux coller aux seuils exacts d’Excel)
-      // CF année 1
+      // Couleurs KPI
       if (cf1 > 0) setKpiState("kpi-card-cf1", "positive");
       else if (cf1 > -2000) setKpiState("kpi-card-cf1", "neutral");
       else setKpiState("kpi-card-cf1", "negative");
 
-      // CF moyen
       if (cfMoy > 0) setKpiState("kpi-card-cf-moy", "positive");
       else if (cfMoy > -2000) setKpiState("kpi-card-cf-moy", "neutral");
       else setKpiState("kpi-card-cf-moy", "negative");
 
-      // Patrimoine final (comparé à l'apport)
       if (patrimoineFinal >= hypotheses.apport * 2)
         setKpiState("kpi-card-patrimoine", "positive");
       else if (patrimoineFinal >= hypotheses.apport)
         setKpiState("kpi-card-patrimoine", "neutral");
       else setKpiState("kpi-card-patrimoine", "negative");
 
-      // TRI après IS
       if (triApres >= 0.06) setKpiState("kpi-card-tri", "positive");
       else if (triApres >= 0.03) setKpiState("kpi-card-tri", "neutral");
       else setKpiState("kpi-card-tri", "negative");
@@ -1313,7 +1327,7 @@
           };
         });
 
-      // Inputs des tranches de prêt travaux
+      // Inputs des tranches de prêt travaux (4 premières tranches pilotables)
       document
         .querySelectorAll("input[data-tranche]")
         .forEach((input) => {
@@ -1396,15 +1410,15 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       loadScenarioList();
     }
+
     // -----------------------------
-    // Démarrage – équivalent du "Workbook_Open" dans Excel
+    // Démarrage
     // -----------------------------
     window.addEventListener("DOMContentLoaded", () => {
-      initInputs();        // Remplit les champs avec les valeurs Excel Base
-      loadScenarioList();  // Charge la liste des scénarios sauvegardés
-      recompute();         // Calcul complet (CF, IS, TRI, tableau, courbe)
+      initInputs();
+      loadScenarioList();
+      recompute();
 
-      // Boutons scénarios
       document.getElementById("btn-save").onclick = saveScenario;
       document.getElementById("btn-load").onclick = loadSelectedScenario;
       document.getElementById("btn-delete").onclick = deleteSelectedScenario;
