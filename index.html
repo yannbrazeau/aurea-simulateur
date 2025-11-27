@@ -1,512 +1,1413 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Aurea – Colocation étudiante à Angers, quartier Saint-Maurice</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Aurea Saint-Maurice : maison de caractère rénovée en colocation étudiante à Angers. Chambres cosy, espaces communs chaleureux, quartier historique et sécurisé.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Aurea – Simulateur Immo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js pour la courbe -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --aurea-bg: #fff8e8;
+      --aurea-green: #6b754c;
+      --aurea-gold: #e2b950;
+      --aurea-text: #374151;
+      --aurea-muted: #9ca3af;
+      --card-bg: #ffffff;
+      --border-soft: #e5e7eb;
+      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.08);
+      --radius-xl: 18px;
+      --radius-large: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fffdf4 0, var(--aurea-bg) 45%, #f3e9d0 100%);
+      color: var(--aurea-text);
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-radius: var(--radius-large);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+
+    .logo-block {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-block img {
+      height: 56px;
+      width: auto;
+    }
+
+    .logo-text-main {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--aurea-green);
+    }
+
+    .logo-text-sub {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--aurea-muted);
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 13px;
+      color: var(--aurea-muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(107, 117, 76, 0.1);
+      color: var(--aurea-green);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 6px;
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .layout {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      .col-left { width: 45%; }
+      .col-right { width: 55%; }
+    }
+
+    .col-left, .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      padding: 16px 16px 14px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--aurea-green);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--aurea-muted);
+    }
+
+    .pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(226, 185, 80, 0.1);
+      color: var(--aurea-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 8px 12px;
+    }
+
+    @media (min-width: 700px) {
+      .inputs-grid.cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 12px;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .field small {
+      font-size: 11px;
+      color: var(--aurea-muted);
+    }
+
+    .field input {
+      flex: 1;
+      padding: 7px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 13px;
+      outline: none;
+      background: #faf7ee;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s;
+      min-width: 0;
+    }
+
+    .field input:focus {
+      border-color: var(--aurea-green);
+      box-shadow: 0 0 0 1px rgba(107, 117, 76, 0.18);
+      background: #fffdf7;
+    }
+
+    .field span.unit {
+      font-size: 11px;
+      color: var(--aurea-muted);
+      padding: 0 4px;
+      white-space: nowrap;
+    }
+
+    .small-input {
+      max-width: 70px;
+      text-align: center;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (min-width: 650px) {
+      .summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
+
+    .kpi-card {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fdf7e7, #faf3dc);
+      border: 1px solid rgba(226, 185, 80, 0.25);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-positive {
+      background: linear-gradient(135deg, #ecfdf3, #dcfce7);
+      border-color: rgba(34, 197, 94, 0.55);
+    }
+    .kpi-neutral {
+      background: linear-gradient(135deg, #fefce8, #fef3c7);
+      border-color: rgba(234, 179, 8, 0.55);
+    }
+    .kpi-negative {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--aurea-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 3px;
+    }
+
+    .kpi-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--aurea-green);
+      margin-top: 2px;
+    }
+
+    .scenario-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .scenario-bar input {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 12px;
+      min-width: 160px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--aurea-green);
+      color: white;
+      transition: background 0.15s ease, transform 0.05s ease,
+        box-shadow 0.15s ease;
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    button.secondary {
+      background: #f5eee0;
+      color: var(--aurea-green);
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: #f97373;
+      color: #fff;
+      box-shadow: none;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    select {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      border: 1px solid var(--border-soft);
+      background: #faf7ee;
+      min-width: 160px;
+    }
+
+    .table-wrapper {
+      margin-top: 8px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      overflow: hidden;
+      background: #fffcf5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    thead { background: rgba(107, 117, 76, 0.08); }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid #efe5d3;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child { text-align: left; }
+
+    th {
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--aurea-muted);
+      margin-top: 4px;
+    }
+  </style>
 </head>
 <body>
-<header class="site-header">
-  <div class="container header-inner">
-    <a href="#accueil" class="brand">
-      <img src="img/logo-aurea.png" alt="Logo Aurea" class="brand-logo">
-      <div class="brand-text">
-        <span class="brand-name">Aurea</span>
-        <span class="brand-tagline">Saint-Maurice · Angers</span>
+  <div class="page">
+    <header>
+      <div class="logo-block">
+        <img src="logo-aurea.png" alt="Aurea" />
+        <div>
+          <div class="logo-text-main">Aurea</div>
+          <div class="logo-text-sub">Simulation patrimoniale</div>
+        </div>
       </div>
-    </a>
+      <div class="header-right">
+        <div class="badge">
+          <span>Simulateur interactif</span>
+        </div>
+        <div>Jouez avec les hypothèses en temps réel<br />et sauvegardez vos scénarios.</div>
+      </div>
+    </header>
 
-    <nav class="main-nav">
-      <a href="#accueil">Accueil</a>
-      <a href="#concept">Concept</a>
-      <a href="#residence">Résidence</a>
-      <a href="#chambres">Chambres</a>
-      <a href="#quartier">Quartier</a>
-      <a href="#process">Process</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contact" class="nav-cta">Candidater</a>
-    </nav>
+    <div class="layout">
+      <!-- COLONNE GAUCHE : HYPOTHÈSES -->
+      <div class="col-left">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Bloc acquisition</div>
+              <div class="card-subtitle">Montant du projet &amp; financement</div>
+            </div>
+            <span class="pill">Entrées</span>
+          </div>
+          <div class="inputs-grid cols-2">
+            <div class="field">
+              <label>Prix d'achat</label>
+              <div class="field-row">
+                <input type="number" data-field="prixAchat" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Frais de notaire</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="fraisNotairePct" />
+                <span class="unit">% du prix</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Travaux initiaux financés</label>
+              <div class="field-row">
+                <input type="number" data-field="travauxInitiaux" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Apport</label>
+              <div class="field-row">
+                <input type="number" data-field="apport" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Durée du prêt principal</label>
+              <div class="field-row">
+                <input type="number" data-field="dureePret" />
+                <span class="unit">ans</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux du prêt principal</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxPret" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux assurance emprunteur</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxAssurance" />
+                <span class="unit">% / an</span>
+              </div>
+              <small>Appliqué au capital restant dû.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Prêt travaux</div>
+              <div class="card-subtitle">4 tranches éditables (comme l'Excel)</div>
+            </div>
+          </div>
+          <div class="inputs-grid">
+            <div class="field">
+              <label>Montant total prêt travaux</label>
+              <div class="field-row">
+                <input type="number" data-field="montantPretTravaux" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Durée prêt travaux</label>
+              <div class="field-row">
+                <input type="number" data-field="dureePretTravaux" />
+                <span class="unit">ans</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux prêt travaux</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxPretTravaux" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="inputs-grid">
+            <div class="field">
+              <label>Tranche 1</label>
+              <div class="field-row">
+                <input type="number" data-tranche="0" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="0" data-tranche-field="debut" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Tranche 2</label>
+              <div class="field-row">
+                <input type="number" data-tranche="1" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="1" data-tranche-field="debut" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Tranche 3</label>
+              <div class="field-row">
+                <input type="number" data-tranche="2" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="2" data-tranche-field="debut" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Tranche 4</label>
+              <div class="field-row">
+                <input type="number" data-tranche="3" data-tranche-field="montant" />
+                <span class="unit">€ à partir de l'année</span>
+                <input type="number" class="small-input" data-tranche="3" data-tranche-field="debut" />
+              </div>
+            </div>
+          </div>
+          <p class="hint">
+            Par défaut : 6 k€ en année 2, 20 k€ en année 3, 9 k€ en année 4, 15 k€ en année 6 (total 50 k€).
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Loyers & services</div>
+              <div class="card-subtitle">Hypothèses d’exploitation (Base)</div>
+            </div>
+          </div>
+          <div class="inputs-grid cols-2">
+            <div class="field">
+              <label>Loyers annuels bruts (année 1)</label>
+              <div class="field-row">
+                <input type="number" data-field="loyersAnnuel" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Croissance loyers</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceLoyers" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Vacance locative</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="vacance" />
+                <span class="unit">% des loyers</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Frais de gestion</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="fraisGestionPct" />
+                <span class="unit">% loyers encaissés</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Charges non récupérables (année 1)</label>
+              <div class="field-row">
+                <input type="number" data-field="chargesNRAn1" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Croissance charges</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceCharges" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Année début services</label>
+              <div class="field-row">
+                <input type="number" data-field="anneeDebutServices" />
+                <span class="unit">année</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Revenus services (année de départ)</label>
+              <div class="field-row">
+                <input type="number" data-field="revenusServicesAnDepart" />
+                <span class="unit">€</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Croissance revenus services</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceServices" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Capex annuel cible</label>
+              <div class="field-row">
+                <input type="number" data-field="capexAnnuel" />
+                <span class="unit">€</span>
+              </div>
+              <small>Pour gros travaux (rampe comme dans l'Excel).</small>
+            </div>
+            <div class="field">
+              <label>Croissance capex</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="croissanceCapex" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Revalorisation du bien</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="revaloBienPct" />
+                <span class="unit">% / an</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Fiscalité IS</div>
+              <div class="card-subtitle">Cash-flow après impôt</div>
+            </div>
+          </div>
+          <div class="inputs-grid cols-2">
+            <div class="field">
+              <label>Taux IS réduit</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxISRedit" />
+                <span class="unit">% </span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Seuil IS réduit</label>
+              <div class="field-row">
+                <input type="number" data-field="seuilISRedit" />
+                <span class="unit">€ de bénéfice</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Taux IS normal</label>
+              <div class="field-row">
+                <input type="number" step="0.01" data-type="percent" data-field="tauxIS" />
+                <span class="unit">% </span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Durée de projection</label>
+              <div class="field-row">
+                <input type="number" data-field="dureeProjection" />
+                <span class="unit">années</span>
+              </div>
+            </div>
+          </div>
+          <p class="hint">
+            V4 calée sur les hypothèses "Base" de ton Excel : IS réduit à 15 % jusqu'à 42 500 €, puis 25 %.
+          </p>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE : SYNTHÈSE + COURBE + TABLEAU + SCÉNARIOS -->
+      <div class="col-right">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Synthèse</div>
+              <div class="card-subtitle">Vue rapide de la performance</div>
+            </div>
+          </div>
+          <div class="summary-grid">
+            <div class="kpi-card" id="kpi-card-cf1">
+              <div class="kpi-label">CF année 1</div>
+              <div class="kpi-value" id="kpi-cf1">–</div>
+              <div class="kpi-sub" id="kpi-cf1-sub">avant IS</div>
+            </div>
+            <div class="kpi-card" id="kpi-card-cf-moy">
+              <div class="kpi-label">CF moyen</div>
+              <div class="kpi-value" id="kpi-cf-moy">–</div>
+              <div class="kpi-sub" id="kpi-cf-moy-sub">sur la période</div>
+            </div>
+            <div class="kpi-card" id="kpi-card-patrimoine">
+              <div class="kpi-label">Patrimoine net final</div>
+              <div class="kpi-value" id="kpi-patrimoine">–</div>
+              <div class="kpi-sub" id="kpi-patrimoine-sub">valeur – dettes</div>
+            </div>
+            <div class="kpi-card" id="kpi-card-tri">
+              <div class="kpi-label">TRI projet</div>
+              <div class="kpi-value" id="kpi-tri-avant">–</div>
+              <div class="kpi-sub" id="kpi-tri-apres">après IS : –</div>
+            </div>
+            <div class="kpi-card" id="kpi-card-emprunt">
+              <div class="kpi-label">Somme empruntée</div>
+              <div class="kpi-value" id="kpi-emprunt">–</div>
+              <div class="kpi-sub" id="kpi-emprunt-sub">prêt principal + travaux</div>
+            </div>
+          </div>
+
+          <!-- 🔄 Bouton de rafraîchissement -->
+          <div style="text-align:right; margin:10px 0;">
+            <button id="btn-refresh" class="secondary">🔄 Rafraîchir</button>
+          </div>
+
+          <hr style="border: none; border-top: 1px dashed #e5decf; margin: 10px 0;" />
+
+          <div class="card-subtitle" style="margin-bottom: 4px;">Scénarios</div>
+          <div class="scenario-bar">
+            <input id="scenario-name" placeholder="Nom du scénario (Base, Optimiste…)" />
+            <button id="btn-save">💾 Sauvegarder</button>
+            <select id="scenario-select"></select>
+            <button class="secondary" id="btn-load">⬇ Charger</button>
+            <button class="danger" id="btn-delete">🗑 Supprimer</button>
+          </div>
+          <p class="hint">
+            Les scénarios sont stockés dans ton navigateur (localStorage) : tu peux en créer, les recharger et les modifier.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Projection annuelle</div>
+              <div class="card-subtitle">Cash-flow, IS et patrimoine année par année</div>
+            </div>
+          </div>
+
+          <div style="height: 220px; margin-bottom: 10px;">
+            <canvas id="cfChart"></canvas>
+          </div>
+          <p class="hint">
+            Courbe du cash-flow avant et après IS. Touchez les points sur mobile pour voir le détail.
+          </p>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Année</th>
+                  <th>Loyers encaissés</th>
+                  <th>Charges + capex</th>
+                  <th>Annuités (prêt + travaux)</th>
+                  <th>CF avant IS</th>
+                  <th>Impôt IS</th>
+                  <th>CF après IS</th>
+                  <th>Capital restant dû</th>
+                  <th>Valeur du bien</th>
+                  <th>Patrimoine net</th>
+                </tr>
+              </thead>
+              <tbody id="projection-body">
+                <!-- Rempli en JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</header>
 
-<main>
-  <!-- HERO / ACCUEIL -->
-  <section id="accueil" class="section hero">
-    <div class="container hero-grid">
-      <div class="hero-text">
-        <p class="hero-eyebrow">Colocation étudiante à Angers</p>
-        <h1>Colocation Aurea<br>Saint-Maurice</h1>
-        <p class="hero-lead">
-          Maison de caractère rénovée, chambres cosy et ambiance feutrée au cœur
-          du quartier historique Saint-Maurice. Un lieu de vie élégant, pensé
-          pour des études sereines.
-        </p>
+  <!-- JS -->
+  <script>
+    // -----------------------------
+    // Hypothèses "Base" issues de l'Excel
+    // -----------------------------
+    const defaultHypotheses = {
+      prixAchat: 765000,          // Prix du bien
+      fraisNotairePct: 0.0668,    // 6,68 % du prix
+      travauxInitiaux: 70000,     // Travaux initiaux
+      apport: 235000,             // Apport (Base)
+      dureePret: 20,              // Durée prêt principal
+      tauxPret: 0.0309,           // 3,09 %
+      tauxAssurance: 0.0045,      // 0,45 % du CRD
 
-        <div class="hero-actions">
-          <a href="#chambres" class="btn btn-primary">Découvrir les chambres</a>
-          <a href="#contact" class="btn btn-ghost">Rejoindre la liste d’attente</a>
-        </div>
+      loyersAnnuel: 50280,        // Loyers annuels bruts année 1
+      croissanceLoyers: 0.02,     // +2 % / an
+      vacance: 0.02,              // 2 % de vacance
+      fraisGestionPct: 0.01,      // 1 % des loyers encaissés
+      chargesNRAn1: 6902,         // Ajusté pour coller à l'Excel
+      croissanceCharges: 0.025,   // +2,5 % / an
+      revaloBienPct: 0.02,        // +2 % / an
 
-        <p class="hero-small">
-          10 chambres meublées · Internet fibre · Espaces communs chaleureux · Quartier ancien, calme et sécurisé.
-        </p>
-      </div>
+      anneeDebutServices: 2,
+      revenusServicesAnDepart: 1500,
+      croissanceServices: 0.02,
 
-      <div class="hero-media">
-        <figure class="hero-photo">
-          <img src="img/salon-aurea.jpg" alt="Salon Aurea Saint-Maurice">
-        </figure>
-      </div>
-    </div>
-  </section>
+      capexAnnuel: 3000,
+      croissanceCapex: 0.0,
 
-  <!-- CONCEPT -->
-  <section id="concept" class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2>Le concept Aurea</h2>
-        <p class="section-intro">
-          Aurea s’inspire du coliving haut de gamme pour proposer une colocation
-          simple, élégante et chaleureuse, dans une maison ancienne de centre-ville.
-          Les espaces ont été pensés pour conjuguer intimité, travail et moments partagés.
-        </p>
-      </div>
+      tauxISRedit: 0.15,
+      seuilISRedit: 42500,
+      tauxIS: 0.25,
+      dureeProjection: 20,
 
-      <div class="feature-grid">
-        <article class="feature-card">
-          <h3>Chambres cosy</h3>
-          <p>
-            Chambres lumineuses, rangements pratiques, literie confortable et
-            décoration douce. Chaque résident dispose de son espace à soi.
-          </p>
-        </article>
-        <article class="feature-card">
-          <h3>Ambiance sereine</h3>
-          <p>
-            Colocation calme, profils compatibles, règlement intérieur clair.
-            L’esprit maison plutôt que résidence anonyme.
-          </p>
-        </article>
-        <article class="feature-card">
-          <h3>Tout compris</h3>
-          <p>
-            Loyer charges comprises (eau, électricité, chauffage, internet, entretien
-            des communs). Vous vous concentrez sur vos études, nous nous occupons du reste.
-          </p>
-        </article>
-      </div>
-    </div>
-  </section>
+      montantPretTravaux: 50000,
+      dureePretTravaux: 20,
+      tauxPretTravaux: 0.0309
+    };
 
-  <!-- RÉSIDENCE -->
-  <section id="residence" class="section section-alt residence-section">
-    <div class="container">
-      <div class="section-header">
-        <h2>Résidence Aurea Saint-Maurice</h2>
-        <p class="section-intro">
-          Une maison de caractère accueillant 10 chambres étudiantes, des espaces
-          communs chaleureux et une vraie vie de maison.
-        </p>
-      </div>
+    // Tranches du prêt travaux (4 tranches par défaut, total 50k)
+    const defaultTranches = [
+      { montant: 6000,  debut: 2 },
+      { montant: 20000, debut: 3 },
+      { montant: 9000,  debut: 4 },
+      { montant: 15000, debut: 6 }
+    ];
 
-      <div class="residence-mosaic">
-        <figure class="residence-card residence-card-large">
-          <img src="img/facade-maison.JPG" alt="Façade de la maison Aurea">
-          <figcaption>Maison de ville en cœur historique, dans une rue pavée calme du quartier Saint-Maurice.</figcaption>
-        </figure>
+    let hypotheses = { ...defaultHypotheses };
+    let trancheConfig = defaultTranches.map(t => ({ ...t }));
+    let cfChart = null;
 
-        <figure class="residence-card">
-          <img src="img/salon-aurea-2.jpg" alt="Salon Aurea Saint-Maurice">
-          <figcaption>Grand salon vouté avec canapés, coin repas et murs en pierre apparente.</figcaption>
-        </figure>
+    let lastMontantPretPrincipal = 0;
+    let lastSommeEmprunteeTotale = 0;
 
-        <figure class="residence-card">
-          <img src="img/bar-murs-blancs.jpg" alt="Bar convivial Aurea">
-          <figcaption>Bar le long du mur, idéal pour travailler ou partager un café.</figcaption>
-        </figure>
+    // -----------------------------
+    // Utilitaires math
+    // -----------------------------
+    function annuite(capital, taux, duree) {
+      if (capital <= 0 || duree <= 0) return 0;
+      if (taux === 0) return capital / duree;
+      const r = taux;
+      return (capital * r) / (1 - Math.pow(1 + r, -duree));
+    }
 
-        <figure class="residence-card">
-          <img src="img/cuisine-aurea.jpg" alt="Cuisine équipée Aurea">
-          <figcaption>Cuisine de caractère entièrement équipée pour cuisiner à plusieurs.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
+    function formatEuro(x) {
+      if (!isFinite(x)) return "–";
+      return (
+        (x < 0 ? "-" : "") +
+        Math.abs(x).toLocaleString("fr-FR", {
+          maximumFractionDigits: 0
+        }) +
+        " €"
+      );
+    }
 
-  <!-- CHAMBRES -->
-  <section id="chambres" class="section rooms-section">
-    <div class="container">
-      <div class="section-header">
-        <h2>Les chambres</h2>
-        <p class="section-intro">
-          Chaque chambre a sa lumière, sa vue, son ambiance. Les pièces ont été
-          aménagées pour des séjours longs et sereins, dans une maison ancienne
-          en cœur de ville. Loyer charges comprises (eau, électricité, chauffage,
-          internet, entretien des communs).
-        </p>
-      </div>
+    function formatEuroSmall(x) {
+      if (!isFinite(x)) return "–";
+      return (
+        (x < 0 ? "-" : "") +
+        Math.abs(x).toLocaleString("fr-FR", {
+          maximumFractionDigits: 0
+        })
+      );
+    }
 
-      <div class="rooms-grid-elegant">
-        <!-- Chambre 1 -->
-        <article class="room-card-elegant">
-          <div class="room-image-wrapper">
-            <img src="img/chambre-vue-cour.jpg" alt="Chambre vue cour Aurea">
-            <span class="room-badge room-badge-free">Disponible</span>
-          </div>
-          <div class="room-content">
-            <h3>Chambre 1 – Vue cour</h3>
-            <p class="room-meta">10 m² · 490 €/mois CC</p>
-            <p class="room-text">
-              Chambre calme donnant sur la cour pavée, avec bureau et rangements intégrés.
-              Parquet ancien et lumière douce, idéale pour travailler au calme.
-            </p>
-            <ul class="room-list">
-              <li>Bureau et rangements intégrés.</li>
-              <li>Lit simple, matelas confortable.</li>
-              <li>Proximité immédiate des pièces d’eau.</li>
-            </ul>
-            <div class="room-thumbs">
-              <div class="room-thumb">
-                <img src="img/chambre-vue-cour.jpg" alt="Vue de la chambre 1">
-              </div>
-              <div class="room-thumb">
-                <img src="img/salle-eau-1.jpg" alt="Salle d’eau à proximité">
-              </div>
-              <div class="room-thumb">
-                <img src="img/salle-eau-2.jpg" alt="Double vasque de la maison">
-              </div>
-            </div>
-            <div class="room-actions">
-              <a href="#contact" class="btn-room-primary">Réserver cette chambre</a>
-              <a href="#contact" class="btn-room-secondary">Demander plus de photos</a>
-            </div>
-          </div>
-        </article>
+    function formatPercent(x) {
+      if (!isFinite(x)) return "–";
+      return (x * 100).toFixed(1).replace(".", ",") + " %";
+    }
 
-        <!-- Chambre 2 -->
-        <article class="room-card-elegant">
-          <div class="room-image-wrapper">
-            <img src="img/chambre-vue-jardin.jpg" alt="Chambre mansardée lumineuse">
-            <span class="room-badge room-badge-waiting">Bientôt disponible</span>
-          </div>
-          <div class="room-content">
-            <h3>Chambre 2 – Vue jardin</h3>
-            <p class="room-meta">12 m² · 520 €/mois CC</p>
-            <p class="room-text">
-              Chambre mansardée très lumineuse, avec vue dégagée sur les toits et jardins voisins.
-              Ambiance claire et épurée, parfaite pour une vie étudiante sereine.
-            </p>
-            <ul class="room-list">
-              <li>Grande surface utile sous combles.</li>
-              <li>Fenêtre sur les toits d’Angers.</li>
-              <li>Accès rapide au salon et à la cuisine.</li>
-            </ul>
-            <div class="room-thumbs">
-              <div class="room-thumb">
-                <img src="img/chambre-vue-jardin.jpg" alt="Vue de la chambre 2">
-              </div>
-              <div class="room-thumb">
-                <img src="img/salle-eau-2.jpg" alt="Salle d’eau de l’étage">
-              </div>
-              <div class="room-thumb">
-                <img src="img/salon-aurea.jpg" alt="Salon partagé Aurea">
-              </div>
-            </div>
-            <div class="room-actions">
-              <a href="#contact" class="btn-room-primary">Se mettre sur liste d’attente</a>
-              <a href="#contact" class="btn-room-secondary">Recevoir plus de photos</a>
-            </div>
-          </div>
-        </article>
+    // IRR (TRI)
+    function irr(cashflows) {
+      let low = -0.9;
+      let high = 1.5;
+      const f = (rate) =>
+        cashflows.reduce(
+          (acc, cf, t) => acc + cf / Math.pow(1 + rate, t),
+          0
+        );
 
-        <!-- Chambre 3 -->
-        <article class="room-card-elegant">
-          <div class="room-image-wrapper">
-            <img src="img/chambre-sous-combles.jpg" alt="Chambre sous combles Aurea">
-            <span class="room-badge room-badge-full">Actuellement louée</span>
-          </div>
-          <div class="room-content">
-            <h3>Chambre 3 – Sous les toits</h3>
-            <p class="room-meta">11 m² · 505 €/mois CC</p>
-            <p class="room-text">
-              Chambre sous les toits avec grands rangements et coin bureau. Ambiance
-              cocooning, un exemple de chambre déjà occupée dans la maison.
-            </p>
-            <ul class="room-list">
-              <li>Nombreux rangements intégrés.</li>
-              <li>Accès facile aux parties communes.</li>
-              <li>Lumière traversante selon la saison.</li>
-            </ul>
-            <div class="room-thumbs">
-              <div class="room-thumb">
-                <img src="img/chambre-sous-combles.jpg" alt="Vue de la chambre 3">
-              </div>
-              <div class="room-thumb">
-                <img src="img/salle-eau-1.jpg" alt="Salle d’eau de la maison">
-              </div>
-              <div class="room-thumb">
-                <img src="img/facade-maison-2.jpg" alt="Maison rue des Filles-Dieu">
-              </div>
-            </div>
-            <div class="room-actions">
-              <a href="#contact" class="btn-room-primary">Être prévenu d’une prochaine place</a>
-              <a href="#contact" class="btn-room-secondary">Demander un dossier complet</a>
-            </div>
-          </div>
-        </article>
-      </div>
+      let fLow = f(low);
+      let fHigh = f(high);
+      if (fLow * fHigh > 0) return NaN;
 
-      <p class="section-note">
-        Certaines chambres sont déjà louées. Vous pouvez
-        <a href="#contact">rejoindre la liste d’attente</a> pour être contacté dès
-        qu’une place se libère.
-      </p>
-    </div>
-  </section>
+      for (let i = 0; i < 80; i++) {
+        const mid = (low + high) / 2;
+        const fMid = f(mid);
+        if (Math.abs(fMid) < 1e-6) return mid;
+        if (fLow * fMid < 0) {
+          high = mid;
+          fHigh = fMid;
+        } else {
+          low = mid;
+          fLow = fMid;
+        }
+      }
+      return (low + high) / 2;
+    }
 
-  <!-- QUARTIER -->
-  <section id="quartier" class="section quartier-section">
-    <div class="container">
-      <div class="section-header">
-        <h2>Un quartier d’exception au cœur d’Angers</h2>
-        <p class="section-intro">
-          Aurea se situe rue des Filles-Dieu, dans le quartier historique de la Cité.
-          Un emplacement rare : patrimoine, calme et vie de quartier, à deux pas de tout.
-        </p>
-      </div>
+    // -----------------------------
+    // Prêt travaux – tranches
+    // -----------------------------
+    function computePretTravauxSchedule(h, tranchesSource) {
+      const nYears = h.dureeProjection;
+      const rate = h.tauxPretTravaux;
+      const nper = h.dureePretTravaux;
 
-      <div class="quartier-wrapper">
-        <!-- Bloc 1 -->
-        <div class="quartier-block">
-          <h3>Quartier chargé d’histoire</h3>
+      const tranches = tranchesSource
+        .filter(t => t.montant && t.debut)
+        .map((t) => ({
+          montant: t.montant,
+          debut: t.debut,
+          restant: t.montant
+        }));
 
-          <div class="quartier-gallery">
-            <figure class="quartier-card">
-              <img src="img/quartier-cathedrale.jpg" alt="Cathédrale Saint-Maurice d’Angers">
-            </figure>
-            <figure class="quartier-card">
-              <img src="img/quartier-rue.jpg" alt="Ruelle pavée près de la rue des Filles-Dieu">
-            </figure>
-            <figure class="quartier-card">
-              <img src="img/quartier-maison-adam.jpg" alt="Maison d’Adam à Angers">
-            </figure>
-          </div>
+      const rows = [];
 
-          <p class="quartier-text-small">
-            La Cité est l’un des secteurs les plus anciens d’Angers, avec ses
-            bâtiments médiévaux, ses maisons à pan de bois et ses hôtels particuliers.
-          </p>
-          <p class="quartier-text-small">
-            La rue des Filles-Dieu tire son nom d’un ancien ordre religieux du
-            Moyen Âge. On y retrouve une atmosphère de quartier
-            <strong>authentique, calme et pleine de charme</strong>.
-          </p>
-        </div>
+      for (let year = 1; year <= nYears; year++) {
+        let annuiteTot = 0;
+        let interetsTot = 0;
+        let amortTot = 0;
+        let crdTot = 0;
 
-        <hr class="quartier-separator">
+        tranches.forEach((tr) => {
+          if (
+            year >= tr.debut &&
+            year < tr.debut + nper &&
+            tr.restant > 1e-6
+          ) {
+            const a = annuite(tr.montant, rate, nper);
+            const interets = tr.restant * rate;
+            let amort = a - interets;
+            if (amort > tr.restant) amort = tr.restant;
+            tr.restant -= amort;
 
-        <!-- Bloc 2 -->
-        <div class="quartier-block">
-          <h3>À deux pas des essentiels</h3>
+            annuiteTot += a;
+            interetsTot += interets;
+            amortTot += amort;
+          }
+          crdTot += tr.restant;
+        });
 
-          <div class="quartier-gallery">
-            <figure class="quartier-card">
-              <img src="img/quartier-ralliement.jpg" alt="Place du Ralliement à Angers">
-            </figure>
-            <figure class="quartier-card">
-              <img src="img/quartier-chateau.jpg" alt="Château d’Angers vu du ciel">
-            </figure>
-            <figure class="quartier-card">
-              <img src="img/quartier-maisons.jpg" alt="Maisons anciennes d’Angers">
-            </figure>
-          </div>
+        rows.push({
+          annuite: annuiteTot,
+          interets: interetsTot,
+          amort: amortTot,
+          crd: crdTot
+        });
+      }
 
-          <p class="quartier-text-small">
-            En vivant dans ce quartier, les colocataires profitent d’un
-            emplacement véritablement <strong>ultra-pratique</strong> :
-          </p>
-          <ul class="quartier-list">
-            <li>Cathédrale : 2 minutes à pied.</li>
-            <li>Château, place du Ralliement, commerces : 5 à 7 minutes.</li>
-            <li>Bars, cafés, terrasses, marché et supérette à proximité immédiate.</li>
-            <li>Tram, bus et vélos en libre-service à quelques pas.</li>
-          </ul>
-        </div>
+      return rows;
+    }
 
-        <!-- Bloc 3 + carte -->
-        <div class="quartier-map-block">
-          <div>
-            <h3>Calme, sécurité & vie étudiante</h3>
-            <p class="quartier-text-small">
-              La rue des Filles-Dieu est très peu passante et naturellement
-              protégée du bruit. C’est un environnement idéal pour des étudiants
-              qui souhaitent être au centre de la ville tout en restant au calme
-              pour travailler.
-            </p>
-            <ul class="quartier-list">
-              <li>Quartier résidentiel, ambiance familiale et rassurante.</li>
-              <li>Accès rapide aux universités, écoles et espaces de coworking.</li>
-              <li>Gare TGV à environ 15 minutes à pied.</li>
-              <li>Un cadre de vie qui rassure autant les étudiants que leurs parents.</li>
-            </ul>
-          </div>
+    // -----------------------------
+    // Capex – rampe
+    // -----------------------------
+    function capexForYear(year, h) {
+      if (year <= 5) return 0;
+      if (year === 6 || year === 7) return 500;
+      if (year === 8) return 1500;
+      if (year === 9) return 2000;
+      const n = year - 1;
+      return h.capexAnnuel * Math.pow(1 + h.croissanceCapex, n);
+    }
 
-          <div class="quartier-map-card">
-            <iframe
-              src="https://www.google.com/maps?q=Rue%20des%20Filles-Dieu%20Angers&output=embed"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              allowfullscreen>
-            </iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    // -----------------------------
+    // Projection globale
+    // -----------------------------
+    function computeProjection(h, tranches) {
+      const results = [];
 
-  <!-- PROCESS -->
-  <section id="process" class="section section-alt">
-    <div class="container">
-      <div class="section-header">
-        <h2>Comment candidater&nbsp;?</h2>
-        <p class="section-intro">
-          Un processus simple et transparent, pour les étudiants comme pour
-          les parents.
-        </p>
-      </div>
+      const fraisNotaire = h.prixAchat * h.fraisNotairePct;
+      const coutTotal = h.prixAchat + fraisNotaire + h.travauxInitiaux;
 
-      <ol class="process-list">
-        <li>
-          <h3>1. Prendre contact</h3>
-          <p>
-            Vous remplissez le formulaire de contact en bas de page avec quelques
-            informations sur votre profil, vos études et vos dates souhaitées.
-          </p>
-        </li>
-        <li>
-          <h3>2. Visiter la maison</h3>
-          <p>
-            Nous organisons une visite sur place ou en visio pour présenter la maison,
-            les chambres disponibles et, si possible, certains colocataires.
-          </p>
-        </li>
-        <li>
-          <h3>3. Validation du dossier</h3>
-          <p>
-            Étudiant et garant fournissent les pièces nécessaires
-            (carte d’identité, justificatifs de revenus, etc.). Réponse rapide
-            après étude du dossier.
-          </p>
-        </li>
-        <li>
-          <h3>4. Signature & installation</h3>
-          <p>
-            Une fois le dossier accepté, nous signons le bail, fixons la date
-            d’entrée et vous accompagneons dans votre installation à Aurea.
-          </p>
-        </li>
-      </ol>
-    </div>
-  </section>
+      // Montant du prêt principal = achat + notaire – apport
+      const montantPretPrincipal = h.prixAchat + fraisNotaire - h.apport;
+      const annuitePret = annuite(montantPretPrincipal, h.tauxPret, h.dureePret);
 
-  <!-- FAQ -->
-  <section id="faq" class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2>Questions fréquentes</h2>
-      </div>
+      const pretTravSchedule = computePretTravauxSchedule(h, tranches);
 
-      <div class="faq-list">
-        <article class="faq-item">
-          <h3>Les charges sont-elles incluses dans le loyer&nbsp;?</h3>
-          <p>
-            Oui, le loyer est charges comprises : eau, électricité, chauffage,
-            internet et entretien des parties communes.
-          </p>
-        </article>
+      lastMontantPretPrincipal = montantPretPrincipal;
+      // Carte "Somme empruntée" = prêt principal (comme Excel)
+      lastSommeEmprunteeTotale = montantPretPrincipal;
 
-        <article class="faq-item">
-          <h3>Quel type de bail est proposé&nbsp;?</h3>
-          <p>
-            Il s’agit d’un bail individuel meublé pour chaque chambre, avec
-            accès aux espaces communs de la maison.
-          </p>
-        </article>
+      let crd = montantPretPrincipal;
 
-        <article class="faq-item">
-          <h3>Les parents peuvent-ils visiter&nbsp;?</h3>
-          <p>
-            Bien sûr. Nous accueillons volontiers les parents lors des visites
-            pour répondre à leurs questions et les rassurer sur le cadre de vie.
-          </p>
-        </article>
+      let loyers = h.loyersAnnuel;
+      let chargesNR = h.chargesNRAn1;
+      let revenusServices = 0;
 
-        <article class="faq-item">
-          <h3>Y a-t-il des règles de vie dans la maison&nbsp;?</h3>
-          <p>
-            Oui, un règlement intérieur simple encadre le respect, le calme et
-            la bonne entente entre colocataires, pour préserver la qualité de vie de chacun.
-          </p>
-        </article>
-      </div>
-    </div>
-  </section>
+      for (let an = 1; an <= h.dureeProjection; an++) {
+        if (an === 1) {
+          loyers = h.loyersAnnuel;
+          chargesNR = h.chargesNRAn1;
+        } else {
+          loyers = loyers * (1 + h.croissanceLoyers);
+          chargesNR = chargesNR * (1 + h.croissanceCharges);
+        }
 
-  <!-- CONTACT -->
-  <section id="contact" class="section section-alt">
-    <div class="container">
-      <div class="section-header">
-        <h2>Contact & candidatures</h2>
-        <p class="section-intro">
-          Dites-nous qui vous êtes, votre situation et vos dates souhaitées.
-          Nous reviendrons vers vous rapidement pour organiser un échange.
-        </p>
-      </div>
+        if (an < h.anneeDebutServices) {
+          revenusServices = 0;
+        } else if (an === h.anneeDebutServices) {
+          revenusServices = h.revenusServicesAnDepart;
+        } else {
+          revenusServices = revenusServices * (1 + h.croissanceServices);
+        }
 
-      <form class="contact-form">
-        <div class="form-row">
-          <div class="form-field">
-            <label for="nom">Nom</label>
-            <input id="nom" name="nom" type="text" required>
-          </div>
-          <div class="form-field">
-            <label for="prenom">Prénom</label>
-            <input id="prenom" name="prenom" type="text" required>
-          </div>
-        </div>
+        const totalRev = loyers + revenusServices;
+        const vacance = totalRev * h.vacance;
+        const loyersEncaisses = totalRev - vacance;
+        const fraisGestion = loyersEncaisses * h.fraisGestionPct;
 
-        <div class="form-row">
-          <div class="form-field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" required>
-          </div>
-          <div class="form-field">
-            <label for="tel">Téléphone</label>
-            <input id="tel" name="tel" type="tel">
-          </div>
-        </div>
+        const resultatExploitation =
+          loyersEncaisses - fraisGestion - chargesNR;
 
-        <div class="form-field">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="5" placeholder="Présentez votre profil, vos études, vos dates souhaitées, et les chambres qui vous intéressent…"></textarea>
-        </div>
+        const interets = crd * h.tauxPret;
+        const assurance = crd * h.tauxAssurance;
+        const amort = annuitePret - interets;
 
-        <button type="submit" class="btn btn-primary">Envoyer ma demande</button>
-      </form>
-    </div>
-  </section>
-</main>
+        const pretTravAn = pretTravSchedule[an - 1] || {
+          annuite: 0,
+          interets: 0,
+          amort: 0,
+          crd: 0
+        };
+        const annuiteTrav = pretTravAn.annuite;
+        const crdTravaux = pretTravAn.crd;
 
-<footer class="site-footer">
-  <div class="container footer-inner">
-    <p>© 2025 Aurea – Colocation étudiante à Saint-Maurice, Angers.</p>
-    <p class="footer-small">Infos non contractuelles – exemples indicatifs de loyers et disponibilités.</p>
-  </div>
-</footer>
+        const capex = capexForYear(an, h);
+
+        const cashflowAvantImp =
+          resultatExploitation -
+          capex -
+          annuitePret -
+          assurance -
+          annuiteTrav;
+
+        crd = Math.max(0, crd - amort);
+
+        const valeurBien =
+          coutTotal * Math.pow(1 + h.revaloBienPct, an);
+
+        const patrimoineNet = valeurBien - crd;
+
+        results.push({
+          an,
+          loyersEncaisses,
+          chargesNR,
+          capex,
+          annuitePret,
+          annuiteTrav,
+          cashflowAvantImp,
+          interets,
+          assurance,
+          crd,
+          crdTravaux,
+          valeurBien,
+          patrimoineNet
+        });
+      }
+
+      return {
+        coutTotal,
+        montantPretPrincipal,
+        annuitePret,
+        projection: results
+      };
+    }
+
+    // -----------------------------
+    // IS & CF après IS
+    // -----------------------------
+    function computeIS(projection, h) {
+      return projection.map((row) => {
+        const benefImposable = Math.max(0, row.cashflowAvantImp);
+        let impot = 0;
+        if (benefImposable <= h.seuilISRedit) {
+          impot = benefImposable * h.tauxISRedit;
+        } else {
+          impot =
+            h.seuilISRedit * h.tauxISRedit +
+            (benefImposable - h.seuilISRedit) * h.tauxIS;
+        }
+        const cfApresIS = row.cashflowAvantImp - impot;
+        return { an: row.an, benefImposable, impot, cfApresIS };
+      });
+    }
+
+    // -----------------------------
+    // Chart
+    // -----------------------------
+    function updateChart(years, cfAvant, cfApres) {
+      const ctx = document.getElementById("cfChart").getContext("2d");
+
+      if (!cfChart) {
+        cfChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: years,
+            datasets: [
+              {
+                label: "CF avant IS",
+                data: cfAvant,
+                borderColor: "#6b754c",
+                backgroundColor: "rgba(107,117,76,0.15)",
+                fill: false,
+                tension: 0.3
+              },
+              {
+                label: "CF après IS",
+                data: cfApres,
+                borderColor: "#e2b950",
+                backgroundColor: "rgba(226,185,80,0.18)",
+                fill: true,
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                labels: { font: { size: 11 } }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { font: { size: 10 } },
+                grid: { display: false }
+              },
+              y: {
+                ticks: {
+                  font: { size: 10 },
+                  callback: (value) =>
+                    value.toLocaleString("fr-FR", {
+                      maximumFractionDigits: 0
+                    }) + " €"
+                },
+                grid: { color: "rgba(148,163,184,0.2)" }
+              }
+            }
+          }
+        });
+      } else {
+        cfChart.data.labels = years;
+        cfChart.data.datasets[0].data = cfAvant;
+        cfChart.data.datasets[1].data = cfApres;
+        cfChart.update();
+      }
+    }
+
+    // -----------------------------
+    // KPI state
+    // -----------------------------
+    function setKpiState(cardId, state) {
+      const el = document.getElementById(cardId);
+      if (!el) return;
+      el.classList.remove("kpi-positive", "kpi-neutral", "kpi-negative");
+      if (state === "positive") el.classList.add("kpi-positive");
+      else if (state === "neutral") el.classList.add("kpi-neutral");
+      else if (state === "negative") el.classList.add("kpi-negative");
+    }
+
+    // -----------------------------
+    // Recompute global
+    // -----------------------------
+    function recompute() {
+      const { coutTotal, montantPretPrincipal, annuitePret, projection } =
+        computeProjection(hypotheses, trancheConfig);
+      const isRows = computeIS(projection, hypotheses);
+
+      if (!projection.length) return;
+
+      const cf1 = projection[0].cashflowAvantImp;
+      const cfMoy =
+        projection.reduce((s, r) => s + r.cashflowAvantImp, 0) /
+        projection.length;
+      const patrimoineFinal =
+        projection[projection.length - 1].patrimoineNet;
+
+      const cfAvantList = projection.map((r) => r.cashflowAvantImp);
+      const cfApresList = isRows.map((r) => r.cfApresIS);
+
+      const valeurFinale =
+        projection[projection.length - 1].valeurBien;
+      const crdFinal =
+        projection[projection.length - 1].crd;
+
+      const plusValueBrute = valeurFinale - coutTotal;
+      const impotPlusValue =
+        plusValueBrute > 0 ? plusValueBrute * hypotheses.tauxIS : 0;
+
+      const saleNetApresIS = valeurFinale - crdFinal - impotPlusValue;
+
+      const cashflowsAvant = [-hypotheses.apport];
+      for (let i = 0; i < cfAvantList.length - 1; i++) {
+        cashflowsAvant.push(cfAvantList[i]);
+      }
+      cashflowsAvant.push(
+        cfAvantList[cfAvantList.length - 1] + patrimoineFinal
+      );
+
+      const cashflowsApres = [-hypotheses.apport];
+      for (let i = 0; i < cfApresList.length - 1; i++) {
+        cashflowsApres.push(cfApresList[i]);
+      }
+      cashflowsApres.push(
+        cfApresList[cfApresList.length - 1] + saleNetApresIS
+      );
+
+      const triAvant = irr(cashflowsAvant);
+      const triApres = irr(cashflowsApres);
+
+      document.getElementById("kpi-cf1").textContent = formatEuro(cf1);
+      document.getElementById("kpi-cf1-sub").textContent =
+        "avant IS – " + (cf1 >= 0 ? "positif" : "négatif");
+
+      document.getElementById("kpi-cf-moy").textContent = formatEuro(cfMoy);
+      document.getElementById("kpi-cf-moy-sub").textContent =
+        "moyenne annuelle (avant IS)";
+
+      document.getElementById("kpi-patrimoine").textContent =
+        formatEuro(patrimoineFinal);
+      document.getElementById("kpi-patrimoine-sub").textContent =
+        "après revalorisation & remboursement des prêts";
+
+      document.getElementById("kpi-tri-avant").textContent =
+        isFinite(triAvant) ? formatPercent(triAvant) : "–";
+      document.getElementById("kpi-tri-apres").textContent =
+        "après IS : " +
+        (isFinite(triApres) ? formatPercent(triApres) : "–");
+
+      // Somme empruntée = prêt principal (style Excel) + détail travaux
+      document.getElementById("kpi-emprunt").textContent =
+        formatEuro(lastSommeEmprunteeTotale);
+      document.getElementById("kpi-emprunt-sub").textContent =
+        "Prêt principal : " +
+        formatEuro(lastMontantPretPrincipal) +
+        " · Travaux : " +
+        formatEuro(hypotheses.montantPretTravaux) +
+        " → total : " +
+        formatEuro(lastMontantPretPrincipal + hypotheses.montantPretTravaux);
+
+      if (cf1 > 0) setKpiState("kpi-card-cf1", "positive");
+      else if (cf1 > -2000) setKpiState("kpi-card-cf1", "neutral");
+      else setKpiState("kpi-card-cf1", "negative");
+
+      if (cfMoy > 0) setKpiState("kpi-card-cf-moy", "positive");
+      else if (cfMoy > -2000) setKpiState("kpi-card-cf-moy", "neutral");
+      else setKpiState("kpi-card-cf-moy", "negative");
+
+      if (patrimoineFinal >= hypotheses.apport * 2)
+        setKpiState("kpi-card-patrimoine", "positive");
+      else if (patrimoineFinal >= hypotheses.apport)
+        setKpiState("kpi-card-patrimoine", "neutral");
+      else setKpiState("kpi-card-patrimoine", "negative");
+
+      if (triApres >= 0.06) setKpiState("kpi-card-tri", "positive");
+      else if (triApres >= 0.03) setKpiState("kpi-card-tri", "neutral");
+      else setKpiState("kpi-card-tri", "negative");
+
+      const tbody = document.getElementById("projection-body");
+      tbody.innerHTML = "";
+      projection.forEach((row, idx) => {
+        const isRow = isRows[idx];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.an}</td>
+          <td>${formatEuroSmall(row.loyersEncaisses)}</td>
+          <td>${formatEuroSmall(row.chargesNR + row.capex)}</td>
+          <td>${formatEuroSmall(row.annuitePret + row.annuiteTrav)}</td>
+          <td>${formatEuroSmall(row.cashflowAvantImp)}</td>
+          <td>${formatEuroSmall(isRow.impot)}</td>
+          <td>${formatEuroSmall(isRow.cfApresIS)}</td>
+          <td>${formatEuroSmall(row.crd + row.crdTravaux)}</td>
+          <td>${formatEuroSmall(row.valeurBien)}</td>
+          <td>${formatEuroSmall(row.patrimoineNet)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const years = projection.map((r) => r.an);
+      const cfAvantArr = projection.map((r) => r.cashflowAvantImp);
+      const cfApresArr = isRows.map((r) => r.cfApresIS);
+      updateChart(years, cfAvantArr, cfApresArr);
+    }
+
+    // -----------------------------
+    // Initialisation des inputs
+    // -----------------------------
+    function initInputs() {
+      document
+        .querySelectorAll("input[data-field]")
+        .forEach((input) => {
+          const field = input.dataset.field;
+          const type = input.dataset.type;
+          const value = hypotheses[field];
+
+          if (type === "percent") {
+            input.value =
+              (value * 100).toString().replace(".", ",");
+          } else {
+            input.value = value;
+          }
+
+          input.oninput = () => {
+            const raw = input.value.replace(",", ".");
+            const num = parseFloat(raw);
+            let v = isNaN(num) ? 0 : num;
+            if (type === "percent") v = v / 100;
+            hypotheses[field] = v;
+            recompute();
+          };
+        });
+
+      document
+        .querySelectorAll("input[data-tranche]")
+        .forEach((input) => {
+          const index = parseInt(input.dataset.tranche, 10);
+          const field = input.dataset.trancheField;
+          const current = trancheConfig[index] || { montant: 0, debut: 0 };
+
+          input.value = current[field] ?? "";
+
+          input.oninput = () => {
+            const raw = input.value.replace(",", ".");
+            const num = parseFloat(raw);
+            const v = isNaN(num) ? 0 : num;
+            trancheConfig[index] = {
+              ...trancheConfig[index],
+              [field]: v
+            };
+            recompute();
+          };
+        });
+    }
+
+    // -----------------------------
+    // Scénarios
+    // -----------------------------
+    const STORAGE_KEY = "aurea-scenarios-v5-base";
+
+    function loadScenarioList() {
+      const select = document.getElementById("scenario-select");
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      select.innerHTML = "";
+      const optPlaceholder = document.createElement("option");
+      optPlaceholder.value = "";
+      optPlaceholder.textContent = "Scénarios sauvegardés…";
+      select.appendChild(optPlaceholder);
+      Object.keys(data).forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+    }
+
+    function saveScenario() {
+      const nameInput = document.getElementById("scenario-name");
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert("Donne un nom à ton scénario 🙂");
+        return;
+      }
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      data[name] = {
+        hypotheses,
+        tranches: trancheConfig
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadScenarioList();
+    }
+
+    function loadSelectedScenario() {
+      const select = document.getElementById("scenario-select");
+      const name = select.value;
+      if (!name) return;
+
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!data[name]) return;
+
+      // On part des valeurs par défaut puis on écrase avec le scénario
+      hypotheses = {
+        ...defaultHypotheses,
+        ...(data[name].hypotheses || {})
+      };
+      trancheConfig = (data[name].tranches || defaultTranches).map(t => ({ ...t }));
+      initInputs();
+      recompute();
+    }
+
+    function deleteSelectedScenario() {
+      const select = document.getElementById("scenario-select");
+      const name = select.value;
+      if (!name) return;
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!data[name]) return;
+      if (!confirm(`Supprimer le scénario "${name}" ?`)) return;
+      delete data[name];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadScenarioList();
+    }
+
+    // -----------------------------
+    // Démarrage
+    // -----------------------------
+    window.addEventListener("DOMContentLoaded", () => {
+      initInputs();
+      loadScenarioList();
+      recompute();
+
+      document.getElementById("btn-save").onclick = saveScenario;
+      document.getElementById("btn-load").onclick = loadSelectedScenario;
+      document.getElementById("btn-delete").onclick = deleteSelectedScenario;
+
+      // 🔄 bouton Rafraîchir
+      document.getElementById("btn-refresh").onclick = () => {
+        recompute();
+      };
+    });
+  </script>
 </body>
 </html>
